@@ -41,6 +41,9 @@ public abstract class PageBase {
   }
 
   /** Use this constructor when creating data buffers.
+   *
+   * @param blocksize specifies the size of the blocks stored by a single Page:
+   * must match the value supplied to the FileMgr constructor.
    */
   public PageBase(int blocksize) {
     // fill me in in your implementation class!

@@ -35,6 +35,10 @@ public abstract class FileMgrBase {
   /** The constructor is responsible for removing temporary files that may have
    * been created in previous invocations of the DBMS.  By convention, such
    * files are denoted by starting with the string "temp".
+   *
+   * @param dbDirectory specifies the location of the root database directory
+   * in which files will be created
+   * @param blockSize size of blocks to be used in this database
    */
   public FileMgrBase(File dbDirectory, int blocksize) {
     // fill me in in your implementation class!
@@ -44,8 +48,21 @@ public abstract class FileMgrBase {
 
   public abstract void write(BlockIdBase blk, PageBase p);
 
+  /** Allocates a block at the end of the specified file.  The contents of the
+   * new block is implementation dependent, but a block of the correct size
+   * MUST be written to disk after the call completes.
+   *
+   * @param filename specifies the file to which the block should be appended
+   * @throws RuntimeException any checked exceptions should be converted to
+   * RuntimeException as necessary.
+   */
   public abstract BlockIdBase append(String filename);
 
+  /** Return the number of blocks of the specified file
+   *
+   * @param filename specifies the file
+   * @return the number of blocks of that file
+   */
   public abstract int length(String filename);
 
   public abstract boolean isNew();
