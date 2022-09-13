@@ -18,6 +18,14 @@ package edu.yu.dbimpl.file;
  * folder exists, then a folder is created for a new database. The method isNew
  * returns true in this case and false otherwise.
  *
+ * Note: the "current directory" is the directory from where the JVM was
+ * invoked.  See e.g., https://stackoverflow.com/a/15954821 for the difference
+ * between user's directory and the current working directory
+ *
+ * Design note: the FileMgr creates files "on demand".  Specifically, if the
+ * client invokes an API that references a file, and the file doesn't yet
+ * exist, the FileMgr creates a new empty file with that name.
+
  * Your implementation will likely invoke JDK methods that throw checked
  * exceptions.  As you can see, the API doesn't declare any checked exception:
  * you should catch and rethrow any such exception as a RuntimeException.
