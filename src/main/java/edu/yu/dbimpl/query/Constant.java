@@ -2,8 +2,10 @@ package edu.yu.dbimpl.query;
 
 /** A "value class" encapsulating a single database value.  
  *
- * As avalue class, Constant overrides the necessary base class methods
+ * As a value class, Constant overrides the necessary base class methods
  * appropriately.
+ *
+ * Students MAY NOT modify this class in any way!
  */
 
 public class Constant implements Comparable<Constant> {
