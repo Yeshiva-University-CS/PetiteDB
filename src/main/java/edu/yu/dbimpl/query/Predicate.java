@@ -1,13 +1,11 @@
 package edu.yu.dbimpl.query;
 
-import java.util.*;
-
-import edu.yu.dbimpl.plan.Plan;
-import edu.yu.dbimpl.record.*;
-
 /** A Predicate is a boolean combination of terms (see the lecture that defines
  * the current restrictions on what must be supported).  This class is NOT
  * immutable as clients can add arbitrary number of terms to the Predicate.
+ *
+ * IMPORTANT: a Predicate currently only provides a "conjunction of terms"
+ * semantics.
  *
  * Design note: the implementation DOES NOT override equals and hashCode.  The
  * reasoning: too tricky. e.g., the object's identity depends on multiple Terms
@@ -16,7 +14,12 @@ import edu.yu.dbimpl.record.*;
  * decision as you use this class.
  *
  * Students MAY NOT modify this class in any way!.
+ *
+ * @author Avraham Leff
  */
+
+import java.util.*;
+
 public class Predicate {
 
   /** Constructor which creates an "empty" predicate (no terms), thus
