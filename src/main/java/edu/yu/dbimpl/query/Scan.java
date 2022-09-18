@@ -52,7 +52,8 @@ public interface Scan {
    */
   public boolean hasField(String fldname);
    
-  /** Terminate the scan processing (including "subscan-processing, if any)
+  /** Terminate the scan processing (and automatically also close all
+   * underlying scans, if any).
    */
   public void close();
 }

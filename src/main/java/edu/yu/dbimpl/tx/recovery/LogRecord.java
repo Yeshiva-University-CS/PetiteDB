@@ -9,8 +9,6 @@ package edu.yu.dbimpl.tx.recovery;
  * @author Avraham Leff
  */
 
-import edu.yu.dbimpl.file.Page;
-import edu.yu.dbimpl.file.PageBase;
 import edu.yu.dbimpl.tx.TxBase;
 
 interface LogRecord {
