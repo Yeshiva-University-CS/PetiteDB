@@ -9,9 +9,14 @@ package edu.yu.dbimpl.log;
  *
  * A class that provides the ability to move through the records of the log
  * file in reverse order.
+ *
+ * Design note: given that log iteration is done on startup by the recovery
+ * manager as a single-threaded process, or on a per-tx basis for rollback, the
+ * iterator need not be thread-safe.  If these assumptions are incorrect, then
+ * the iterator must be thread-safe.
  * 
  * Note: "package private" by design since non-dbms-clients should not be
- * directlt creating an instance.
+ * directly creating an instance.
  * 
  * @author Avraham Leff
  */
@@ -23,16 +28,19 @@ import edu.yu.dbimpl.file.FileMgrBase;
 abstract class LogIteratorBase implements Iterator<byte[]> {
 
   /** Constructor: creates an iterator for the records in the log file,
-   * positioned after the LAST log record.
+   * positioned after the LAST log record.  Thus if there is a single log
+   * record in the file: hasNext() will return true, and next() will return
+   * that record.
    */
   public LogIteratorBase(FileMgrBase fm, BlockIdBase blk) {
     // fill me in in your implementation class!
   }
 
-  /** Returns true iff the current log record is the first record in the log
-   * file.
+  /** Returns false iff the current log record is the first record in the log
+   * file (log iteration proceeds from latest record to earliest record).
    *
-   * @return true if there is an earlier record
+   * @return true if there is an earlier record than the current iterator
+   * record
    */
   public abstract boolean hasNext();
 

@@ -14,8 +14,8 @@ package edu.yu.dbimpl.log;
  * bytes"
  *
  * The LogMgr latest-sequence-number (LSN) must be initialized (to facilitate
- * my testing) to 0, and incremented each time that an append() operation
- * completes succesfully.
+ * my testing) to 0.  A successful call to append() returns the current LSN to
+ * the client and then increments the value.
 
  * @author Avraham Leff
  */
@@ -40,7 +40,9 @@ public abstract class LogMgrBase {
   }
 
   /** Ensures that the log record corresponding to the specified LSN has been
-   * written to disk.  All earlier log records will also be written to disk.
+   * written to disk.  All earlier log records will also be written to disk,
+   * and the implementation may also write the entire disk block associated
+   * with the LSN log record to disk as well.
    *
    * @param lsn the LSN of a log record
    */
@@ -53,7 +55,9 @@ public abstract class LogMgrBase {
    */
   public abstract Iterator<byte[]> iterator();
 
-  /** Appends a log record (as an arbitray byte array).
+  /** Appends a log record (as an arbitray byte array), and return the current
+   * ("pre-incremented") LSN to the client.  If successful, the LSN is
+   * incremented internally.
    *
    * Note: appending a record to the log does NOT guarantee that the record
    * will be immediately written to disk.  In general, the log manager
@@ -72,7 +76,8 @@ public abstract class LogMgrBase {
    *
    * @param logrec a byte buffer containing the bytes.  The only constraint is
    * that the array must fits inside a single Page.
-   * @return the LSN of the final value
+   * @return the LSN at the time before it was incremented as a side-effect of
+   * this method.
    * @throws IllegalArgumentException if the log record is too large to fit
    * into a single page
    * @see #flush
