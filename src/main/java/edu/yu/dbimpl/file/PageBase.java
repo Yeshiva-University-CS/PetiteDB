@@ -49,7 +49,30 @@ public abstract class PageBase {
     // fill me in in your implementation class!
   }
    
-  /** Use this constructor when creating log pages.
+  /** Use this constructor when serializing and deserializing log records.
+   *
+   * When serializing a log record, the byte[] constructor takes a byte array
+   * that contains exactly the amount of SPACE needed to hold all of the "raw"
+   * record's ints and Strings (where the latter are properly encoded).  The
+   * client should then use the Page APIs to set field values at the desired
+   * offsets.  The Page implementation must, as necessary, change the contents
+   * and size of the byte[] to store (e.g, length) meta data, in exactly the
+   * way it does when manipulating a Page that has been constructed with the
+   * "blocksize" constructor.  The implementation is thus ensuring that when
+   * the bytes are serialized to disk, that sufficient information is persisted
+   * that the Page implementation can correctly deserialize the retrieved bytes
+   * into the original log record.
+   *
+   * When deserializing a log record, the client uses this constructor to
+   * convert the serialized bytes into a Page instance that wraps the original
+   * lo record.  The log record's data can then be accessed via the Page getter
+   * APIs.
+   *
+   * It is the client's responsibility to ensure that the byte array length
+   * doesn't exceed the blocksize supplied to the FileMgr.
+   *
+   * @param b a byte array containing ints and properly encoded Strings in a
+   * scheme known to the client.
    */
   public PageBase(byte[] b) {
     // fill me in in your implementation class!

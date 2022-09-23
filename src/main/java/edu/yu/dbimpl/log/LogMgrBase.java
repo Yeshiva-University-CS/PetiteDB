@@ -14,9 +14,12 @@ package edu.yu.dbimpl.log;
  * bytes"
  *
  * The LogMgr latest-sequence-number (LSN) must be initialized (to facilitate
+ * my testing) to 0.  A successful call to append() returns the current LSN to
+ * the client and then increments the value.
+ *
  * my testing) to 0.  A successful call to append() returns the current LSN to
  * the client and then increments the value.
-
+ *
  * @author Avraham Leff
  */
 
