@@ -11,13 +11,12 @@ package edu.yu.dbimpl.log;
  *
  * A LogMgr is responsible for writing log records but has no knowledge of the
  * structure of these records: as far as its concerned it's "just a sequence of
- * bytes"
+ * bytes".  A LogMgr is free to persist any meta-data to the block, and may
+ * choose to throw an IllegalArgumentException if the resulting log record
+ * exceeds the size of a block.
  *
  * The LogMgr latest-sequence-number (LSN) must be initialized (to facilitate
  * my testing) to 0.  A successful call to append() returns the current LSN to
- * the client and then increments the value.
- *
- * my testing) to 0.  A successful call to append() returns the current LSN to
  * the client and then increments the value.
  *
  * @author Avraham Leff
@@ -73,9 +72,6 @@ public abstract class LogMgrBase {
    * written from "right to left" order in a given Page (i.e., at decreasing
    * byte offsets the in the main-memory page).  Storing the records backwards
    * makes it easy to read them in reverse order.
-   *
-   * Specifically: the LogMgr first writes the size of the record before the
-   * byte array, and then writes the byte array itself.
    *
    * @param logrec a byte buffer containing the bytes.  The only constraint is
    * that the array must fits inside a single Page.

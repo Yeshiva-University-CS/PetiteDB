@@ -8,7 +8,7 @@ package edu.yu.dbimpl.file;
  * signatures).
  *
  * A Page represents the main-memory region used to hold the contents of a
- * block, and thus is used by the FileMgr in tandem with a BlockId A Page can
+ * block, and thus is used by the FileMgr in tandem with a BlockId.  A Page can
  * hold three value types: ints, strings, and "blobs" (i.e., arbitrary arrays
  * of bytes).  A client can store a value at any offset of the page but is
  * responsible for knowing what values have been stored where.  The result of
@@ -53,23 +53,25 @@ public abstract class PageBase {
    *
    * When serializing a log record, the byte[] constructor takes a byte array
    * that contains exactly the amount of SPACE needed to hold all of the "raw"
-   * record's ints and Strings (where the latter are properly encoded).  The
-   * client should then use the Page APIs to set field values at the desired
-   * offsets.  The Page implementation must, as necessary, change the contents
-   * and size of the byte[] to store (e.g, length) meta data, in exactly the
-   * way it does when manipulating a Page that has been constructed with the
-   * "blocksize" constructor.  The implementation is thus ensuring that when
-   * the bytes are serialized to disk, that sufficient information is persisted
-   * that the Page implementation can correctly deserialize the retrieved bytes
-   * into the original log record.
+   * record's ints and Strings (where the latter are properly encoded, per
+   * PageBase.maxLength).  The client should then use the Page APIs to set
+   * field values at the desired offsets.  It is up to the implementation to
+   * determine what meta-data it will persist (if any) to the original byte
+   * array and where it will persist the meta-data to.  The implementation is
+   * also responsible for returning the values originally stored by the client
+   * at a given offset when the client retrieves those bytes at the given
+   * offset.  That is: the client should not need to do any offset translation
+   * when retrieving fields from the Page getter methods.
    *
    * When deserializing a log record, the client uses this constructor to
    * convert the serialized bytes into a Page instance that wraps the original
    * lo record.  The log record's data can then be accessed via the Page getter
-   * APIs.
+   * APIs.  
    *
    * It is the client's responsibility to ensure that the byte array length
-   * doesn't exceed the blocksize supplied to the FileMgr.
+   * doesn't exceed the blocksize supplied to the FileMgr.  The implementation
+   * may choose to throw IllegalArgumentException if its metadata together with
+   * the byte array exceed a single block.
    *
    * @param b a byte array containing ints and properly encoded Strings in a
    * scheme known to the client.

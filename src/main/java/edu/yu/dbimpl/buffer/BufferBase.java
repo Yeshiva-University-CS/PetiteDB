@@ -11,6 +11,15 @@ package edu.yu.dbimpl.buffer;
  * additional information such as whether the Page's contents have been
  * modified since it was fetched from disk.
  *
+ * Design note: Buffers should be manipulated through the BufferMgr API to the
+ * greatest extent possible.  For example, difficult to see how a client can
+ * usefully create a Buffer through its constructor since it will not be
+ * associated with a disk block.  The BufferMgr "pin" API (which returns a
+ * Buffer) is the "designed mechanism" for getting a "useful" Buffer.  Similar
+ * design principles for many other Buffer methods: in subsequent iterations, I
+ * plan to explore whether to remove all or many of the public Buffer API,
+ * relegating the current set to a package-private API.
+ *
  * @author Avraham Leff
  */
 
