@@ -79,6 +79,7 @@ public abstract class TxBase {
    * @param blk a reference to a disk block
    * @param offset the byte offset within the block
    * @return the integer stored at that offset
+   * @throws IllegalStateException if specified block isn't currently pinned
    */
   public abstract int getInt(BlockIdBase blk, int offset);
    
@@ -89,6 +90,7 @@ public abstract class TxBase {
    * @param blk a reference to a disk block
    * @param offset the byte offset within the block
    * @return the string stored at that offset
+   * @throws IllegalStateException if specified block isn't currently pinned
    */
   public abstract String getString(BlockIdBase blk, int offset);
    
@@ -104,7 +106,7 @@ public abstract class TxBase {
    * @param val the value to be stored
    * @param okToLog true iff the client wants the operation to be logged, false
    * otherwise.
-   */
+   * @throws IllegalStateException if specified block isn't currently pinned   */
   public abstract void
     setInt(BlockIdBase blk, int offset, int val, boolean okToLog);
    
@@ -120,14 +122,15 @@ public abstract class TxBase {
    * @param val the value to be stored
    * @param okToLog true iff the client wants the operation to be logged, false
    * otherwise.
+   * @throws IllegalStateException if specified block isn't currently pinned
    */
   public abstract void
     setString(BlockIdBase blk, int offset, String val, boolean okToLog);
 
   /** Returns the number of blocks in the specified file.
-   * This method first obtains an SLock on the 
-   * "end of the file", before asking the file manager
-   * to return the file size.
+   *
+   * Note: be sure to provide transactional semantics for this method.
+   *
    * @param filename the name of the file
    * @return the number of blocks in the file
    */
@@ -135,6 +138,8 @@ public abstract class TxBase {
    
   /** Appends a new block to the end of the specified file and returns a
    * reference to it.
+   *
+   * Note: be sure to provide transactional semantics for this method.
    *
    * @param filename the name of the file
    * @return a reference to the newly-created disk block

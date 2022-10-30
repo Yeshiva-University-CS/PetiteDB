@@ -28,12 +28,14 @@ public abstract class RecoveryMgrBase {
     // fill me in in your implementation class!
   }
 
-  /** Write a commit record to the log, and flushes it to disk.
+  /** Write a commit record to the log, and flushes it to disk, and do whatever
+   * concommitant processing is required by your implementation.
    *
    */
   public abstract void commit();
 
-  /** Write a rollback record to the log and flush it to disk.
+  /** Write a rollback record to the log and flush it to disk, and do whatever
+   * concommitant processing is required by your implementation.
    */
   public abstract void rollback();
 

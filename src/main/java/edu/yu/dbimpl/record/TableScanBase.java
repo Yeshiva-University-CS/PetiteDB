@@ -11,6 +11,12 @@ import edu.yu.dbimpl.tx.TxBase;
  * signatures).
  *
  * A TableScan is an UpdateScan implementation over records stored in a file.
+ *
+ * Design note: given the PetiteDB assumptions about record layout (per lecture
+ * discussion), there should be no need to persist the RID information.  Should
+ * you choose to persist it, the implementation must not change the offset or
+ * the block state (i.e., such meta-data must be persisted in a way that is
+ * transparent to the client).
  */
 public abstract class TableScanBase implements UpdateScan {
 
