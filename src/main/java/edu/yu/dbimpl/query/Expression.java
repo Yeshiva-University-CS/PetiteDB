@@ -4,11 +4,6 @@ package edu.yu.dbimpl.query;
  * current restrictions on what must be supported).  The class is immutable by
  * design.
  *
- * Design note: the implementation DOES NOT override equals and hashCode.  The
- * reasoning: too tricky. e.g., the object's identity depends on whether the
- * Constant or String values are non-null.  Be aware of the implications of
- * this design decision as you use this class.
- *
  * Students MAY NOT modify this class in any way! 
  */
 
@@ -75,6 +70,43 @@ public class Expression {
     return (val != null) ? true : schema.hasField(fldname);
   }
    
+  @Override
+  public boolean equals(Object obj) {
+    // semantics for Expression identity depend on whether it's encapsulating a
+    // field name or a value
+    if (obj == this) {
+      return true;
+    }
+    
+    // "null instanceof [type]" also returns false 
+    if (!(obj instanceof Expression)) {
+      return false;
+    }
+    
+    final Expression that = (Expression) obj;
+    if (this.isFieldName() != that.isFieldName()) {
+      return false;
+    }
+    
+    if (this.isFieldName()) {
+      return this.asFieldName().equals(that.asFieldName());
+    }
+    else {                      // a constant
+      return this.asConstant().equals(that.asConstant());
+    }
+  } // equals
+
+  @Override
+  public int hashCode() {
+    if (isFieldName()) {
+      return asFieldName().hashCode();
+    }
+    else {
+      return asConstant().hashCode();
+    }
+  }
+
+
   @Override
   public String toString() {
     return (val != null) ? val.toString() : fldname;

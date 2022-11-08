@@ -4,13 +4,10 @@ package edu.yu.dbimpl.query;
  * defines the current restrictions on what must be supported).  The class is
  * immutable by design.
  *
- * Design note: the implementation DOES NOT override equals and hashCode.  The
- * reasoning: too tricky. e.g., the object's identity depends on whether the
- * Constant or String values are non-null.  Be aware of the implications of
- * this design decision as you use this class.
- *
  * Students MAY NOT modify this class in any way!
  */
+
+import java.util.Objects;
 
 public class Term {
   /** Constructor that creates a term that compares the supplied two
@@ -40,6 +37,26 @@ public class Term {
   @Override
   public String toString() {
     return lhs.toString() + "=" + rhs.toString();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+ 
+    // "null instanceof [type]" also returns false 
+    if (!(obj instanceof Term)) {
+      return false;
+    }
+         
+    final Term that = (Term) obj;
+    return this.rhs.equals(that.rhs) && this.lhs.equals(that.lhs);
+  }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(rhs, lhs);
   }
 
   // package protected, safe to do so because "immutable"

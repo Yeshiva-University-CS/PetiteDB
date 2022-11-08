@@ -5,13 +5,14 @@ package edu.yu.dbimpl.query;
  * immutable as clients can add arbitrary number of terms to the Predicate.
  *
  * IMPORTANT: a Predicate currently only provides a "conjunction of terms"
- * semantics.
+ * semantics.  This decision simplifies implementation considerably but is very
+ * limiting.
  *
- * Design note: the implementation DOES NOT override equals and hashCode.  The
- * reasoning: too tricky. e.g., the object's identity depends on multiple Terms
- * each of which depends on two Expressions, each of which has one null
- * Constant or String value.  Be aware of the implications of this design
- * decision as you use this class.
+ * FIXME: allow (at least) OR clauses in predicates.
+ *
+ * Design note/fixme?: terms() is a List, but does order matter for predicate
+ * semantics?  Will set semantics work as well?  Adding/experimenting with set
+ * semantics in order to decide: definitely in flux.
  *
  * Students MAY NOT modify this class in any way!.
  *
@@ -80,12 +81,39 @@ public class Predicate {
     return result;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+ 
+    // "null instanceof [type]" also returns false 
+    if (!(obj instanceof Predicate)) {
+      return false;
+    }
+         
+    final Predicate that = (Predicate) obj;
+    // see Set Javadoc for "equals"
+    return termsAsSet().equals(that.termsAsSet());
+  }
+  
+  @Override
+  public int hashCode() {
+    return termsAsSet().hashCode();
+  }
+
   /** Returns an unmodifiable version of the Predicate's terms
    *
    * @return an unmodifiable version of the Predicate's terms
    */
   public List<Term> terms() {
     return Collections.unmodifiableList(terms);
+  }
+
+  /** Return an unmodifiable set version of the Predicate's terms
+   */
+  public Set<Term> termsAsSet() {
+    return Collections.unmodifiableSet(new HashSet<>(terms));
   }
 
   private final List<Term> terms = new ArrayList<Term>();

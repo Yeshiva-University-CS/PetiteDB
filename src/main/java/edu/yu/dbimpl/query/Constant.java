@@ -55,6 +55,7 @@ public class Constant implements Comparable<Constant> {
    
   @Override
   public String toString() {
-    return (ival != null) ? ival.toString() : sval.toString();
+    return (ival != null) ? "Integer: "+ival.toString()
+      : "String: "+sval.toString();
   }   
 }
