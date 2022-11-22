@@ -26,7 +26,9 @@ public abstract class RecordPageBase {
   /** Constructor
    *
    * @param tx Defines the transaction scope in which operations on the block
-   * will take place
+   * will take place.  The client passing the tx continues to be responsible
+   * for transaction lifeycle behavior: commit versus rollback.  The
+   * RecordPageBase implementation uses the transaction to "get its work done".
    * @param blk The block in which the record is stored
    * @param layout Holds the physical and logical record schema
    */

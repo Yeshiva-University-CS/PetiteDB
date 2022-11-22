@@ -15,7 +15,11 @@ package edu.yu.dbimpl.record;
  * "length" of an int field does have meaning for Layout, even though it's
  * undefined for SchemaBase.
  *
- * The first byte of the record MUST BE the "in-use/empty" flag.  All records
+ * Because the Layout encapsulates the Schema supplied by the client, the
+ * client transfers ownership of the schema, and may no longer mutate the
+ * Schema instance.
+
+ * The first bytes of the record MUST BE use to store the "in-use/empty" flag.  All records
  * fields MUST BE layed out in the order that the client invoked addField.
  * Aside from this requirement, layout offsets are implementation dependent
  * because field order is implementation dependent.  Only the sum of the
@@ -33,11 +37,10 @@ import java.util.Map;
 
 public abstract class LayoutBase {
 
-  /** Constructs a Layout object from a SchemaBase.  This constructor is used when
-   * a table is created. It determines the physical offset of each field within
-   * the record.
+  /** Constructs a Layout object from a SchemaBase.  This constructor is used
+   * when a table is created. It determines the physical offset of each field
+   * within the record.
    *
-   * @param tblname the name of the table
    * @param schema the schema of the table's records
    */
   public LayoutBase(SchemaBase schema) {
@@ -48,7 +51,6 @@ public abstract class LayoutBase {
    * offset and slot size information is correct.  Intended for when the
    * metadata is retrieved from the internal catalog.
    *
-   * @param tblname the name of the table
    * @param schema the schema of the table's records
    * @param offsets the already-calculated offsets of the fields within a record
    * @param recordlen the already-calculated length of each record
