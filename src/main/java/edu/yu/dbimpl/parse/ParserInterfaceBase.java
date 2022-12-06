@@ -24,7 +24,12 @@ package edu.yu.dbimpl.parse;
  * determining whether the overall input is valid.  Rather: given the current
  * state of the parsing in the input, determine whether the specified SQL
  * constructed can be parsed from the remaining portion of the input.
-
+ *
+ * Semantics note: the parser and lexer should fail-early-and-fatally after
+ * throwing a BadSyntaxException.  Do not try to recover from the error, let
+ * the client fix it and try again.  The behavior of subsequent API invocations
+ * on the input by this parser or lexer instance is undefined.
+ * 
  * @author Avraham Leff
  */
 
@@ -73,7 +78,7 @@ public abstract class ParserInterfaceBase {
   public abstract Expression expression();
 
   /** Parses the constructor parameter as an "Term" (see PetiteDB grammar)
-   *
+b   *
    * @return the parsed field if valid
    * @throws BadSyntaxException if the parser (given its current state relative
    * to the input) can't extract the specified grammar construct.
@@ -88,9 +93,10 @@ public abstract class ParserInterfaceBase {
    */
   public abstract Predicate predicate();
 
-  /** Parses the constructor parameter as an "Predicate" (see PetiteDB grammar)
+  /** Parses the constructor parameter as an "Query" (see PetiteDB grammar),
+   * representing the parsed state as an instance of ParseQueryBase.
    *
-   * @return the parsed field if valid
+   * @return the corresponding parsed query instance if input is valid
    * @throws BadSyntaxException if the parser (given its current state relative
    * to the input) can't extract the specified grammar construct.
    */

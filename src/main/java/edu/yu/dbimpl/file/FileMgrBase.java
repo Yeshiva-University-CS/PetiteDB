@@ -40,9 +40,10 @@ import java.io.*;
 
 public abstract class FileMgrBase {
 
-  /** The constructor is responsible for removing temporary files that may have
-   * been created in previous invocations of the DBMS.  By convention, such
-   * files are denoted by starting with the string "temp".
+  /** The constructor is responsible for removing temporary files and
+   * directories that may have been created in previous invocations of the
+   * DBMS.  By convention, such files and directories are denoted by starting
+   * with the string "temp".
    *
    * @param dbDirectory specifies the location of the root database directory
    * in which files will be created

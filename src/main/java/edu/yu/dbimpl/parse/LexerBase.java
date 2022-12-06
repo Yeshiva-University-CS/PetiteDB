@@ -13,6 +13,11 @@ package edu.yu.dbimpl.parse;
  * Implementors should consider adding "consume specific token type" APIs on
  * behalf of the parser.
  *
+ * Semantics note: the parser and lexer should fail-early-and-fatally after
+ * throwing a BadSyntaxException.  Do not try to recover from the error, let
+ * the client fix it and try again.  The behavior of subsequent API invocations
+ * on the input by this parser or lexer instance is undefined.
+ *
  * @author Avraham Leff
  */
 
@@ -90,7 +95,13 @@ public abstract class LexerBase {
     // fill me in in your implementation class!
   }
 
-  /** Returns the first token that the constructor extracted from the input.
+  /** Returns the first token that the constructor extracted from the input
+   * (even if the client makes subsequent calls to next(), this method will
+   * return the first token extracted).  The method advances the internal state
+   * of the lexer such that a subsequent invocation of next() will return the
+   * second token.  Subsequent invocations of firstToken() do NOT reset the
+   * lexer state, but will simply return the token returned by the first
+   * invocation of this method.
    *
    * @return Token first token in the input
    * @throws BadSyntaxException if a problem occurs when reading the input for
