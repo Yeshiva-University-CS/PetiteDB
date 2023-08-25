@@ -8,15 +8,15 @@ package edu.yu.dbimpl.log;
  * signatures).
  *
  * A class that provides the ability to move through the records of the log
- * file in reverse order.
+ * file in REVERSE order (most recently created to earliest created).
  *
  * Design note: given that log iteration is done on startup by the recovery
  * manager as a single-threaded process, or on a per-tx basis for rollback, the
  * iterator need not be thread-safe.  If these assumptions are incorrect, then
  * the iterator must be thread-safe.
  * 
- * Note: "package private" by design since non-dbms-clients should not be
- * directly creating an instance.
+ * Design note: "package private" by design since non-dbms-clients should not
+ * be directly creating an instance.
  * 
  * @author Avraham Leff
  */

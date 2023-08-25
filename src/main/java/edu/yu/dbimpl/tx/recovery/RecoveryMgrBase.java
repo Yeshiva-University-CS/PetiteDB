@@ -53,6 +53,24 @@ public abstract class RecoveryMgrBase {
    */
   public abstract int setInt(BufferBase buff, int offset, int newval);
 
+  /** Write a setBoolean record to the log and return its lsn.
+   *
+   * @param buff the buffer containing the page
+   * @param offset the offset of the value in the page
+   * @param newval the value to be written
+   * @return the LSN after the record has been written to the log
+   */
+  public abstract int setBoolean(BufferBase buff, int offset, boolean newval);
+
+  /** Write a setDouble record to the log and return its lsn.
+   *
+   * @param buff the buffer containing the page
+   * @param offset the offset of the value in the page
+   * @param newval the value to be written
+   * @return the LSN after the record has been written to the log
+   */
+  public abstract int setDouble(BufferBase buff, int offset, double newval);
+  
   /** Write a setString record to the log and return its lsn.
    *
    * @param buff the buffer containing the page

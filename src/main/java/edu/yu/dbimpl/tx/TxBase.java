@@ -10,6 +10,18 @@ package edu.yu.dbimpl.tx;
  * Transactions provide clients with the classic "ACID" properties, interfacing
  * with concurrency and recovery managers as necessary.
  *
+ * Tx lifespan methods: the constructor begins a new transaction,
+ * commit/rollback end that transaction.  "recover" rolls back ALL uncomitted
+ * txs.
+ *
+ * Tx buffer management methods: all state written to, and read from, a buffer
+ * is mediated through the appropriate setX/getX method.  Before invoking these
+ * methods, clients must invoke "pin" indicating that the tx should take
+ * control of the specified block and the main-memory buffer that encapsulates
+ * that disk block.  The tx maintains control until the client invokes "unpin".
+ * The getX/setX methods provide the hooks for Tx implementation to provide
+ * concurrency and recovery function.
+ *
  * @author Avraham Leff
  */
 
@@ -20,9 +32,9 @@ import edu.yu.dbimpl.buffer.BufferMgrBase;
 
 public abstract class TxBase {
    
-  /** Create a new transaction and its associated recovery and concurrency
-   * managers.  This constructor depends on the file, log, and buffer
-   * managers.
+  /** Creates (and begins) a new transaction and its associated recovery and
+   * concurrency managers.  This constructor depends on the file, log, and
+   * buffer managers.
    *
    * @see edu.yu.dbimpl.tx.concurrency.ConcurrencyMgrBase
    * @see edu.yu.dbimpl.tx.recovery.RecoveryMgrBase
@@ -31,9 +43,12 @@ public abstract class TxBase {
     // fill me in in your implementation class!
   }
    
-  /** Every tx is associated with a unique integer id: this method returns the
-   * tx's id.
+  /** Every tx is associated with a unique non-negative integer id: this method
+   * returns the tx's id.
    *
+   * Suggestion: if only to facilitate debugging, make these values increment
+   * monotonically.
+   * 
    * @return the unique tx id
    */
   public abstract int txnum();
@@ -50,10 +65,10 @@ public abstract class TxBase {
    */
   public abstract void rollback();
    
-  /** Flushes all modified buffer, then traverse the log, rolling back all
-   * uncommitted transactions.  Finally, writees a quiescent checkpoint record"
-   * to the log.  This method is called during system startup, before user
-   * transactions begin.
+  /** Flushes all modified buffers, then traverse the log, rolling back all
+   * uncommitted transactions.  Finally, writees a quiescent "checkpoint
+   * record" to the log.  This method is called during system startup, before
+   * processing user transactions.
    */
   public abstract void recover();
    
@@ -82,7 +97,29 @@ public abstract class TxBase {
    * @throws IllegalStateException if specified block isn't currently pinned
    */
   public abstract int getInt(BlockIdBase blk, int offset);
-   
+
+  /** Returns the boolean value stored at the specified offset of the specified
+   * block.  The transaction acquires an "s-lock" on behalf of the client
+   * before returning the value.
+   *
+   * @param blk a reference to a disk block
+   * @param offset the byte offset within the block
+   * @return the boolean stored at that offset
+   * @throws IllegalStateException if specified block isn't currently pinned
+   */
+  public abstract boolean getBoolean(BlockIdBase blk, int offset);
+
+  /** Returns the double value stored at the specified offset of the specified
+   * block.  The transaction acquires an "s-lock" on behalf of the client
+   * before returning the value.
+   *
+   * @param blk a reference to a disk block
+   * @param offset the byte offset within the block
+   * @return the boolean stored at that offset
+   * @throws IllegalStateException if specified block isn't currently pinned
+   */
+  public abstract double getDouble(BlockIdBase blk, int offset);
+    
   /** Returns the string value stored at the specified offset of the specified
    * block.  The transaction acquires an "s-lock" on beghalf of the client
    * before returning the value.
@@ -109,7 +146,39 @@ public abstract class TxBase {
    * @throws IllegalStateException if specified block isn't currently pinned   */
   public abstract void
     setInt(BlockIdBase blk, int offset, int val, boolean okToLog);
-   
+
+  /** Stores an boolean at the specified offset of the specified block.  The
+   * transaction acquires an "x-lock" on behalf of the client before reading
+   * the value, creating the appropriate "update" log record and adding the
+   * record to the log file.  Finally, the modified value is written to the
+   * buffer.  The transaction is responsible for invoking the buffer
+   * setModified() method, passing in the appropriate parameter values.
+   *
+   * @param blk a reference to the disk block
+   * @param offset a byte offset within that block
+   * @param val the value to be stored
+   * @param okToLog true iff the client wants the operation to be logged, false
+   * otherwise.
+   * @throws IllegalStateException if specified block isn't currently pinned   */
+  public abstract void
+    setBoolean(BlockIdBase blk, int offset, boolean val, boolean okToLog);
+
+  /** Stores a double at the specified offset of the specified block.  The
+   * transaction acquires an "x-lock" on behalf of the client before reading
+   * the value, creating the appropriate "update" log record and adding the
+   * record to the log file.  Finally, the modified value is written to the
+   * buffer.  The transaction is responsible for invoking the buffer
+   * setModified() method, passing in the appropriate parameter values.
+   *
+   * @param blk a reference to the disk block
+   * @param offset a byte offset within that block
+   * @param val the value to be stored
+   * @param okToLog true iff the client wants the operation to be logged, false
+   * otherwise.
+   * @throws IllegalStateException if specified block isn't currently pinned   */
+  public abstract void
+    setDouble(BlockIdBase blk, int offset, double val, boolean okToLog);
+  
   /** Stores a string at the specified offset of the specified block. The
    * transaction acquires an "x-lock" on behalf of the client before reading
    * the value, creating the appropriate "update" log record and adding the

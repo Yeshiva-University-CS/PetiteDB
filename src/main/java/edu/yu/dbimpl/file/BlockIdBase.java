@@ -14,8 +14,13 @@ package edu.yu.dbimpl.file;
  * @author Avraham Leff
  */
 
-
 public abstract class BlockIdBase {
+  /** Constructor
+   *
+   * @param fileName must have a trimmed length that's greater than 0.
+   * @param blknum must be a non-negative integer
+   * @throws IllegalArgumentException as appropriate
+   */
   public BlockIdBase(String filename, int blknum) {
     // fill me in in your implementation class!
   }

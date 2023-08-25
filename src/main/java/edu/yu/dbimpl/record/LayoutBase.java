@@ -19,11 +19,12 @@ package edu.yu.dbimpl.record;
  * client transfers ownership of the schema, and may no longer mutate the
  * Schema instance.
 
- * The first bytes of the record MUST BE use to store the "in-use/empty" flag.  All records
- * fields MUST BE layed out in the order that the client invoked addField.
- * Aside from this requirement, layout offsets are implementation dependent
- * because field order is implementation dependent.  Only the sum of the
- * offsets ("slotSize") must be the same across implementations.
+ * The first bytes of the record MUST BE used to store the Boolean-valued
+ * "in-use/empty" flag.  All records fields MUST BE layed out in the order that
+ * the client invoked addField.  Aside from this requirement, layout offsets
+ * are implementation dependent because field order is implementation
+ * dependent.  Only the sum of the offsets ("slotSize") must be the same across
+ * implementations.
  *
  * The implementation MUST assign the offset of field #i+1 to be located at the
  * location at which field #1 ends: i.e., a fixed-length layout with no extra
@@ -72,6 +73,7 @@ public abstract class LayoutBase {
    *
    * @param fldname the name of the field
    * @return the offset of that field within a record
+   * @throws IllegalArgumentException if fldname isn't defined for this Layout
    */
   public abstract int offset(String fldname);
 

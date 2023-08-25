@@ -11,11 +11,15 @@ package edu.yu.dbimpl.log;
  *
  * A LogMgr is responsible for writing log records but has no knowledge of the
  * structure of these records: as far as its concerned it's "just a sequence of
- * bytes".  A LogMgr is free to persist any meta-data to the block, and may
- * choose to throw an IllegalArgumentException if the resulting log record
- * exceeds the size of a block.
+ * bytes".
  *
- * The LogMgr latest-sequence-number (LSN) must be initialized (to facilitate
+ * A LogMgr is free to persist additional meta-data to the block.  However, for
+ * reasonably sized blocks and log records, it's unreasonable to throw an
+ * IllegalArgumentException because the meta-data causes log records to exceed
+ * the size of a block.  In other words: efficiency counts, or at least
+ * "excessive inefficiency" will cost you.
+ *
+ * The LogMgr latest-sequence-number (LSN) MUST be initialized (to facilitate
  * my testing) to 0.  A successful call to append() returns the current LSN to
  * the client and then increments the value.
  *
@@ -42,9 +46,8 @@ public abstract class LogMgrBase {
   }
 
   /** Ensures that the log record corresponding to the specified LSN has been
-   * written to disk.  All earlier log records will also be written to disk,
-   * and the implementation may also write the entire disk block associated
-   * with the LSN log record to disk as well.
+   * written to disk.  All earlier log records in the same in-memory page as
+   * the specified log record will also be written to disk.
    *
    * @param lsn the LSN of a log record
    */
@@ -78,7 +81,8 @@ public abstract class LogMgrBase {
    * @return the LSN at the time before it was incremented as a side-effect of
    * this method.
    * @throws IllegalArgumentException if the log record is too large to fit
-   * into a single page
+   * into a single page.  The implementation can include "reasonable" amounts
+   * of meta-data when determining that a log record is too big.
    * @see #flush
    */
   public abstract int append(byte[] logrec);

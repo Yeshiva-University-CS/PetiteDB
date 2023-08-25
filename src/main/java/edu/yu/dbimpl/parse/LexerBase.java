@@ -97,11 +97,7 @@ public abstract class LexerBase {
 
   /** Returns the first token that the constructor extracted from the input
    * (even if the client makes subsequent calls to next(), this method will
-   * return the first token extracted).  The method advances the internal state
-   * of the lexer such that a subsequent invocation of next() will return the
-   * second token.  Subsequent invocations of firstToken() do NOT reset the
-   * lexer state, but will simply return the token returned by the first
-   * invocation of this method.
+   * return the first token extracted).
    *
    * @return Token first token in the input
    * @throws BadSyntaxException if a problem occurs when reading the input for
