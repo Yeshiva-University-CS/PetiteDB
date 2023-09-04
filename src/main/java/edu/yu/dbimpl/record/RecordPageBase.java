@@ -1,6 +1,5 @@
 package edu.yu.dbimpl.record;
 
-import static java.sql.Types.INTEGER;
 import edu.yu.dbimpl.file.*;
 import edu.yu.dbimpl.tx.TxBase;
 
@@ -16,6 +15,11 @@ import edu.yu.dbimpl.tx.TxBase;
  * Implementations MUST use the slotted page design for fixed-length fields
  * discussed in lecture and textbook.
  *
+ * Design note: the only methods available for manipulating the crucial
+ * "in-use" flags are insertAfter() and delete().  Setting slot-values without
+ * first setting the "in-use" flag will not accomplish what you're trying to
+ * accomplish.
+ * 
  * Design note: can help to consider the RecordPageBase API as moving parts of
  * the TxBase API "up a level" such that clients can get/set values in terms of
  * field names rather than block locations.
@@ -29,7 +33,12 @@ public abstract class RecordPageBase {
    */
   public static final int BEFORE_FIRST_SLOT = -1;
 
-  /** Constructor
+  /** Constructor.
+   *
+   * IMPORTANT: If the encapsulated block is being used for the first time, the
+   * CLIENT is responsible for invoking "format()" before invoking other
+   * methods on the RecordPage.  Failure to do so implies that the semantics of
+   * subsequent method invocations are undefined.
    *
    * @param tx Defines the transaction scope in which operations on the block
    * will take place.  The client passing the tx continues to be responsible
@@ -120,7 +129,7 @@ public abstract class RecordPageBase {
    */
   public abstract void setDouble(int slot, String fldname, double val);
   
-  /** Deletes the specified slot.
+  /** Deletes the specified slot by setting its "in-use" flag to "not in use".
    *
    * @param slot uniquely identifies the record slot.
    * @throws IllegalArgumentException if slot is negative.

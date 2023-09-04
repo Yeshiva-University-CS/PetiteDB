@@ -29,8 +29,8 @@ public class Term {
    * @see Expression#evaluate
    */
   public boolean isSatisfied(final Scan scan) {
-    final Constant lhsval = lhs.evaluate(scan);
-    final Constant rhsval = rhs.evaluate(scan);
+    final DatumBase lhsval = lhs.evaluate(scan);
+    final DatumBase rhsval = rhs.evaluate(scan);
     return rhsval.equals(lhsval);
   }
    

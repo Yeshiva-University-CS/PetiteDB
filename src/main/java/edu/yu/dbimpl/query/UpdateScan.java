@@ -8,29 +8,54 @@ import edu.yu.dbimpl.record.RID;
  * Students MAY NOT change this interface IN ANY WAY!
  */
 public interface UpdateScan extends Scan {
-  /** Modifies the field value of the current record.
+
+  /** Modifies the field value in the current record.
    *
    * @param fldname the name of the field
-   * @param val the new value, expressed as a Constant
+   * @param val the new value, expressed as a DatumBase
+   * @throws IllegalArgumentException if fldname is not part of the schema
    */
-  public void setVal(String fldname, Constant val);
+  public void setVal(String fldname, DatumBase val);
    
-  /** Modifies the field value of the current record.
+  /** Modifies the field value in the current record.
    *
    * @param fldname the name of the field
    * @param val the new integer value
+   * @throws IllegalArgumentException if fldname is not part of the schema
    */
   public void setInt(String fldname, int val);
-   
-  /** Modifies the field value of the current record.
+
+  /** Modifies the field value in the current record.
+   *
+   * @param fldname the name of the field
+   * @param val the new double value
+   * @throws IllegalArgumentException if fldname is not part of the schema
+   */
+  public default void setDouble(String fldname, double val) {
+    throw new UnsupportedOperationException();
+  }
+
+  /** Modifies the field value in the current record.
+   *
+   * @param fldname the name of the field
+   * @param val the new boolean value
+   * @throws IllegalArgumentException if fldname is not part of the schema   
+   */
+  public default void setBoolean(String fldname, boolean val) {
+    throw new UnsupportedOperationException();
+  }
+  
+  /** Modifies the field value in the current record.
    *
    * @param fldname the name of the field
    * @param val the new string value
+   * @throws IllegalArgumentException if fldname is not part of the schema   
    */
   public void setString(String fldname, String val);
    
   /** Inserts a new record somewhere in the scan after the current record,
-   * setting the current record to the new record.
+   * positioning the scan on that record.  If scanning a physical set of
+   * records (cf TableScan), the record's "in-use" flag is set to true.
    */
   public void insert();
    

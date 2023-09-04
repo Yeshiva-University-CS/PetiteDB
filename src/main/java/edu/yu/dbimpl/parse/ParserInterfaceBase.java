@@ -33,7 +33,7 @@ package edu.yu.dbimpl.parse;
  * @author Avraham Leff
  */
 
-import edu.yu.dbimpl.query.Constant;
+import edu.yu.dbimpl.query.DatumBase;
 import edu.yu.dbimpl.query.Expression;
 import edu.yu.dbimpl.query.Predicate;
 import edu.yu.dbimpl.query.Term;
@@ -67,7 +67,7 @@ public abstract class ParserInterfaceBase {
    * @throws BadSyntaxException if the parser (given its current state relative
    * to the input) can't extract the specified grammar construct.
    */
-  public abstract Constant constant();
+  public abstract DatumBase constant();
 
   /** Parses the constructor parameter as an "Expression" (see PetiteDB grammar)
    *

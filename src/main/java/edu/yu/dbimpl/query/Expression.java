@@ -11,9 +11,9 @@ import edu.yu.dbimpl.record.*;
 
 public class Expression {
 
-  /** Constructor which takes a Constant.
+  /** Constructor which takes a DatumBase.
    */
-  public Expression(final Constant val) {
+  public Expression(final DatumBase val) {
     this.val = val;
   }
    
@@ -27,11 +27,11 @@ public class Expression {
    * field name from the current record of the specified scan.
    *
    * @param scan the scan, assumed to be positioned on a valid record.
-   * @return the "Constant" supplied by the constructior if a "constant"
+   * @return the "DatumBase" supplied by the constructior if a "constant"
    * expression, the value of the scan's current "record.fieldName" if a "field
    * name" expression
    */
-  public Constant evaluate(Scan scan) {
+  public DatumBase evaluate(Scan scan) {
     return (val != null) ? val : scan.getVal(fldname);
   }
    
@@ -43,11 +43,11 @@ public class Expression {
     return fldname != null;
   }
    
-  /** If a "Constant" expression, returns the constant, else returns null.
+  /** If a "DatumBase" expression, returns the constant, else returns null.
    *
    * @return the expression as a constant or null, as appropriate
    */
-  public Constant asConstant() {
+  public DatumBase asConstant() {
     return val;
   }
    
@@ -106,12 +106,11 @@ public class Expression {
     }
   }
 
-
   @Override
   public String toString() {
     return (val != null) ? val.toString() : fldname;
   }
 
-  private Constant val = null;
+  private DatumBase val = null;
   private String fldname = null;
 }
