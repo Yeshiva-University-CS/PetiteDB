@@ -18,12 +18,11 @@ import edu.yu.dbimpl.record.*;
 
 public abstract class SelectScanBase implements UpdateScan {
 
-	/** Constructor
-
-	 * Create a select scan having the specified underlying
-	 * scan and predicate.
+	/** Constructor: creates a select scan having the specified underlying scan
+	 * and predicate.
    *
-	 * @param scan the scan representing the input relation
+	 * @param scan the scan representing the input relation, client transfers
+	 * ownership, e.g., the implementation can invoke Scan.beforeFirst().
 	 * @param predicate the selection predicate that will be applied to filter
 	 * the input relation
 	 */

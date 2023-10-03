@@ -45,9 +45,28 @@ public abstract class DatumBase implements Comparable<DatumBase> {
     // fill me in with your implementation!
   }
   
+  /** Returns the value encapsulated by the DatumBase
+   *
+   * @throws IllegalStateException if the encapsulated value is the wrong type.
+   */
   public abstract int asInt();
+
+  /** Returns the value encapsulated by the DatumBase
+   *
+   * @throws IllegalStateException if the encapsulated value is the wrong type.
+   */
   public abstract boolean asBoolean();
+
+  /** Returns the value encapsulated by the DatumBase
+   *
+   * @throws IllegalStateException if the encapsulated value is the wrong type.
+   */
   public abstract double asDouble();
+
+  /** Returns the value encapsulated by the DatumBase
+   *
+   * @throws IllegalStateException if the encapsulated value is the wrong type.
+   */
   public abstract String asString();
 
   /** Return the type of the wrapped value as a value from the set of constants

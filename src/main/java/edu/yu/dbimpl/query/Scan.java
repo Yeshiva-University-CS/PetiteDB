@@ -38,11 +38,7 @@ public interface Scan {
    * @return the field's boolean value in the current record
    * @throws IllegalArgumentException if fldname is not part of the schema
    */
-  public default boolean getBoolean(String fldname) {
-    // Students must override this implementation as required by the module's
-    // requirements
-    throw new UnsupportedOperationException();
-  }
+  public boolean getBoolean(String fldname);
 
   /** Returns the value of the specified double field in the current record.
    *
@@ -50,11 +46,7 @@ public interface Scan {
    * @return the field's double value in the current record
    * @throws IllegalArgumentException if fldname is not part of the schema
    */
-  public default double getDouble(String fldname) {
-    // Students must override this implementation as required by the module's
-    // requirements
-    throw new UnsupportedOperationException();
-  }
+  public double getDouble(String fldname);
   
   /** Returns the value of the specified string field in the current record.
    *
@@ -80,6 +72,15 @@ public interface Scan {
    */
   public boolean hasField(String fldname);
    
+  /** Returns the type of the specified field.
+   *
+   * return the type of the wrapped value as a value from the set of constants
+   * defined by java.sql.Types
+   * @param fldname the name of the field.
+   * @throws IllegalArgumentException if fldname is not part of the schema
+   */
+  public int getType(String fldname);
+
   /** Terminate the scan processing (and automatically also close all
    * underlying scans, if any), closing all resources, including unpinning any
    * pinned blocks.

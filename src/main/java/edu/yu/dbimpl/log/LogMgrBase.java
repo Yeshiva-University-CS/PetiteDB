@@ -46,8 +46,8 @@ public abstract class LogMgrBase {
   }
 
   /** Ensures that the log record corresponding to the specified LSN has been
-   * written to disk.  All earlier log records in the same in-memory page as
-   * the specified log record will also be written to disk.
+   * written to disk.  All log records in the same in-memory page as the
+   * specified log record will also be written to disk.
    *
    * @param lsn the LSN of a log record
    */
