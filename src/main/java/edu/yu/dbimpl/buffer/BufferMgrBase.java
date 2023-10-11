@@ -20,12 +20,11 @@ import edu.yu.dbimpl.log.LogMgrBase;
 
 public abstract class BufferMgrBase {
    
-  /** Creates a buffer manager having the specified number 
-   * of buffer slots.
+  /** Creates a buffer manager having the specified number of buffer slots.
    *
    * @param fileMgr file manager singleton
    * @param logMgr  log manager singleton
-   * @param nBuffer number of buffers to allocate in main-memory
+   * @param nBuffers number of buffers to allocate in main-memory
    * @param maxWaitTime maximum number of milliseconds to wait before throwing
    * a BufferAbortException to a client invoking pin().  Must be greater than 0.
    * @see #pin
@@ -45,6 +44,7 @@ public abstract class BufferMgrBase {
    * transaction.
    *
    * @param txnum the transaction's id number
+   * @see BufferBase.setModified
    */
   public abstract void flushAll(int txnum);
    
@@ -57,7 +57,7 @@ public abstract class BufferMgrBase {
    */
   public abstract void unpin(BufferBase buffer);
    
-  /**  Pins a buffer to the specified block, writing the current contents to
+  /** Pins a buffer to the specified block, writing the current contents to
    * disk if modified by the previous client and a new disk block is being read
    * from disk.  If no buffers are currently available, the client will block,
    * waiting for a buffer instance to become available.  If no buffer becomes
