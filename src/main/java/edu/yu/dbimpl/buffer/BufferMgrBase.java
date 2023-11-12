@@ -41,7 +41,8 @@ public abstract class BufferMgrBase {
   public abstract int available();
 
   /** Flushes all modified ("dirty") buffers modified by the specified
-   * transaction.
+   * transaction.  Any association between the transaction and its buffers is
+   * removed.
    *
    * @param txnum the transaction's id number
    * @see BufferBase.setModified

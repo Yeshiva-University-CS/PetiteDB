@@ -15,12 +15,15 @@ package edu.yu.dbimpl.tx;
  * txs.
  *
  * Tx buffer management methods: all state written to, and read from, a buffer
- * is mediated through the appropriate setX/getX method.  Before invoking these
- * methods, clients must invoke "pin" indicating that the tx should take
- * control of the specified block and the main-memory buffer that encapsulates
- * that disk block.  The tx maintains control until the client invokes "unpin".
- * The getX/setX methods provide the hooks for Tx implementation to provide
- * concurrency and recovery function.
+ * is mediated through the appropriate setX/getX method.  All setX/getX methods
+ * must acquire the appropriate locks before proceeding.  The method must throw
+ * a LockAbortException if the DBMS is unable to acquire the lock within the
+ * specified timeout period.  Before invoking these methods, clients must
+ * invoke "pin" indicating that the tx should take control of the specified
+ * block and the main-memory buffer that encapsulates that disk block.  The tx
+ * maintains control until the client invokes "unpin".  The getX/setX methods
+ * provide the hooks for Tx implementation to provide concurrency and recovery
+ * function.
  *
  * @author Avraham Leff
  */
@@ -66,9 +69,12 @@ public abstract class TxBase {
   public abstract void rollback();
    
   /** Flushes all modified buffers, then traverse the log, rolling back all
-   * uncommitted transactions.  Finally, writees a quiescent "checkpoint
-   * record" to the log.  This method is called during system startup, before
-   * processing user transactions.
+   * uncommitted transactions.  Finally, writes a quiescent "checkpoint record"
+   * to the log.  This method MUST be called by the DBMS during system startup,
+   * before processing user transactions so as to set the system to a
+   * consistent state.  The method MAY be called by a client at any time, but
+   * the method may then block until the system is deemed quiescent by the
+   * DBMS.
    */
   public abstract void recover();
    

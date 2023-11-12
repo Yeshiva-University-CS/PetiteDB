@@ -40,7 +40,8 @@ public abstract class BufferBase {
    */
   public abstract BlockIdBase block();
 
-  /** Sets the buffer's "modified" bit.  
+  /** Sets the buffer's "modified" bit.  Buffers that have not been modified by
+   * the client should not be flushed to disk.
    *
    * @param txnum
    * @param lsn The LSN of the most recent log record, set to a negative number

@@ -20,6 +20,9 @@ import edu.yu.dbimpl.tx.TxBase;
  * you choose to persist it, the implementation must not change the offset or
  * the block state (i.e., such meta-data must be persisted in a way that is
  * transparent to the client).
+ *
+ * Design note: a given instance of a TableScan need not be thread-safe.
+ 
  */
 public abstract class TableScanBase implements UpdateScan {
 
