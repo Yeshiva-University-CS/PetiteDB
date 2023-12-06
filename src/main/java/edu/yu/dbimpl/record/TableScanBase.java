@@ -45,7 +45,8 @@ public abstract class TableScanBase implements UpdateScan {
   }
 
   /** Returns the file name (relative to the dbDirectory parameter supplied to
-   * the FileMgr) that the 
+   * the FileMgr) that the implementation used to name the file storing the
+   * table's data.
    *
    * @return name of the file used by the implementation to store the table's
    * data.

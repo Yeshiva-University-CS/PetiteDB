@@ -48,6 +48,8 @@ public abstract class DatumBase implements Comparable<DatumBase> {
   /** Returns the value encapsulated by the DatumBase
    *
    * @throws IllegalStateException if the encapsulated value is the wrong type.
+   * If the encapsulated type is of type DOUBLE, returns the equivalent of
+   * Double.intValue().
    */
   public abstract int asInt();
 
@@ -60,6 +62,8 @@ public abstract class DatumBase implements Comparable<DatumBase> {
   /** Returns the value encapsulated by the DatumBase
    *
    * @throws IllegalStateException if the encapsulated value is the wrong type.
+   * If the encapsulated type is of type INTEGER, returns the equivalent of
+   * Integer.doubleValue().
    */
   public abstract double asDouble();
 

@@ -28,7 +28,9 @@ public interface Scan {
    *
    * @param fldname the name of the field
    * @return the field's integer value in the current record
-   * @throws IllegalArgumentException if fldname is not part of the schema
+   * @throws IllegalArgumentException if fldname is not part of the schema or
+   * if the type associated with fldname is incompatible with the expected
+   * return value.
    */
   public int getInt(String fldname);
 
@@ -36,7 +38,9 @@ public interface Scan {
    *
    * @param fldname the name of the field
    * @return the field's boolean value in the current record
-   * @throws IllegalArgumentException if fldname is not part of the schema
+   * @throws IllegalArgumentException if fldname is not part of the schema or
+   * if the type associated with fldname is incompatible with the expected
+   * return value.
    */
   public boolean getBoolean(String fldname);
 
@@ -44,7 +48,9 @@ public interface Scan {
    *
    * @param fldname the name of the field
    * @return the field's double value in the current record
-   * @throws IllegalArgumentException if fldname is not part of the schema
+   * @throws IllegalArgumentException if fldname is not part of the schema or
+   * if the type associated with fldname is incompatible with the expected
+   * return value.
    */
   public double getDouble(String fldname);
   
@@ -52,7 +58,9 @@ public interface Scan {
    *
    * @param fldname the name of the field
    * @return the field's string value in the current record
-   * @throws IllegalArgumentException if fldname is not part of the schema
+   * @throws IllegalArgumentException if fldname is not part of the schema or
+   * if the type associated with fldname is incompatible with the expected
+   * return value.
    */
   public String getString(String fldname);
    
