@@ -22,7 +22,9 @@ import edu.yu.dbimpl.tx.TxBase;
  * transparent to the client).
  *
  * Design note: a given instance of a TableScan need not be thread-safe.
- 
+ *
+ * Design note: All get/set methods MUST throw an IllegalStateException (NOT
+ * IAE) if the TableScan is not positioned on an "in-use" RecordPage slot.
  */
 public abstract class TableScanBase implements UpdateScan {
 

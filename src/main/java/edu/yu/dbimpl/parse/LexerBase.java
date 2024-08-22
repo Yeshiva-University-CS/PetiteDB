@@ -110,7 +110,8 @@ public abstract class LexerBase {
 
   /** Returns the first token that the constructor extracted from the input.
    * Clients extract subsequent tokens via calls to nextToken(); this method
-   * will return the first token (extracted by the constructor).
+   * will return the first token (extracted by the constructor), and doesn't
+   * reset the "pointer" if reinvoked.
    *
    * @return Token first token in the input
    */

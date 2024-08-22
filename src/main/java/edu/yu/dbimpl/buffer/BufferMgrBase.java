@@ -19,8 +19,16 @@ import edu.yu.dbimpl.file.*;
 import edu.yu.dbimpl.log.LogMgrBase;
 
 public abstract class BufferMgrBase {
-   
-  /** Creates a buffer manager having the specified number of buffer slots.
+
+  /** Defines the set of available eviction policies used to select which
+   * unpinned buffer should be used to store a disk block (see lecture for details)
+   */
+  public enum EvictionPolicy { NAIVE, CLOCK
+  };
+
+  
+  /** Creates a buffer manager having the specified number of buffer slots, and
+   * use the EvictionPolicy.NAIVE.
    *
    * @param fileMgr file manager singleton
    * @param logMgr  log manager singleton
@@ -33,7 +41,24 @@ public abstract class BufferMgrBase {
     (FileMgrBase fileMgr, LogMgrBase logMgr, int nBuffers, int maxWaitTime) {
     // fill me in in your implementation class!
   }
-   
+
+  /** Creates a buffer manager having the specified number of buffer slots, and
+   * specify the EvictionPolicy that must be used.
+   *
+   * @param fileMgr file manager singleton
+   * @param logMgr  log manager singleton
+   * @param nBuffers number of buffers to allocate in main-memory
+   * @param maxWaitTime maximum number of milliseconds to wait before throwing
+   * a BufferAbortException to a client invoking pin().  Must be greater than 0.
+   * @param policy the eviction policy to be used
+   * @see #pin
+   * @see #EvictionPolicy
+   */
+  public BufferMgrBase
+    (FileMgrBase fileMgr, LogMgrBase logMgr, int nBuffers, int maxWaitTime, EvictionPolicy policy) {
+    // fill me in in your implementation class!
+  }
+  
   /** Returns the number of available (i.e. unpinned) buffers.
    *
    * @return the number of available buffers
@@ -45,6 +70,7 @@ public abstract class BufferMgrBase {
    * removed.
    *
    * @param txnum the transaction's id number
+   * @throws IllegalArgumentException if txnum is negative
    * @see BufferBase.setModified
    */
   public abstract void flushAll(int txnum);
@@ -54,6 +80,8 @@ public abstract class BufferMgrBase {
    * is now available.
    *
    * @param buffer the buffer to be unpinned
+   * @throws IllegalArgumentException if buffer is null.
+   * @throws IllegalArgumentException if buffer isn't currently pinned 
    * @see #pin
    */
   public abstract void unpin(BufferBase buffer);
@@ -67,8 +95,14 @@ public abstract class BufferMgrBase {
    *
    * @param blk a reference to a disk block
    * @return the buffer pinned to that block
+   * @throws IllegalArgumentException if BlockId is null.
    * @throws BufferAbortException if the client times out waiting for a buffer
    * to become available.
    */
   public abstract BufferBase pin(BlockIdBase blk);
+
+  /** Returns the EvictionPolicy used by the buffer manager.
+   */
+  public abstract EvictionPolicy getEvictionPolicy();
+
 }

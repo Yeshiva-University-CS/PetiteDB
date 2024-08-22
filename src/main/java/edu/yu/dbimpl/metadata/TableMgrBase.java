@@ -51,7 +51,7 @@ public abstract class TableMgrBase {
    */
   public static final String FIELD_META_DATA_TABLE = "fldcat";
 
-  /** Constructor: create a new catalog manager.
+  /** Constructor: create a new table (catalog) manager.
    *
    * @param isNew true iff this is the first time that the database is being
    * created (for this file system root): implicitly requests that the TableMgr

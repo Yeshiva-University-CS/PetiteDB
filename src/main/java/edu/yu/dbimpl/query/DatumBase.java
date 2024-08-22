@@ -1,16 +1,34 @@
 package edu.yu.dbimpl.query;
 
-/** Represents a "value class" encapsulating a single database value (datum)
- * where that value can be exactly one of a set of possible Java types.
- * Although the getters/setters are necessarily specified in terms of Java
- * type, the API requires that a datum be associated with an SQL type.
- * Specifically: strings MUST BE typed as java.sql.Types.VARCHAR, booleans MUST
- * be typed as java.sql.Types.BOOLEAN, doubles as java.sql.Types.DOUBLE, and
- * integers as java.sql.Types.INTEGER.  This approach follows that specified by
- * SchemaBase.
+/** A "value class" encapsulating a single database value (datum): the value
+ * can be exactly one of a set of possible Java types.  Although the
+ * getters/setters are necessarily specified in terms of Java types, the API
+ * requires that a datum be associated with an SQL type.  Specifically: strings
+ * MUST BE typed as java.sql.Types.VARCHAR, booleans MUST be typed as
+ * java.sql.Types.BOOLEAN, doubles as java.sql.Types.DOUBLE, and integers as
+ * java.sql.Types.INTEGER.  This approach follows that specified by SchemaBase.
  *
  * NOTE: a DatumBase is conceptually a "value class", with all implications
  * concomitant thereto.
+ *
+ * Design note: while the Datum constructors are passed Java objects, the asX()
+ * methods returns primitive values corresponding to the object parameters.
+ * Given constructor parameter Y, the semantics of a asX() method is specified
+ * by JDK Y.xValue().  The implementation must throw a ClassCastException if
+ * the object parameters do not support the implied Y.xValue() method
+ * invocation.
+ * 
+ * Design note: the semantics of Datum.equals are "compares this Datum to the
+ * specified object. The result is true if and only if the argument is not null
+ * and is a Datum object that contains the same (by ".equals" semantics)
+ * wrapped value as this Datum instance."
+ *
+ * Design note: a case can be made that the semantics of compareTo should be
+ * based on a Datum's primitive value and e.g., allow comparison between 42.0
+ * and 42.  That said, having equivalent semantics for .equals and compareTo is
+ * so important that Datum.compareTo semantics MUST be based on the object
+ * passed to the Datum constructor.  Datum.compareTo MUST throw a
+ * ClassCastException if the constructor objects are not of the same type.
  *
  * Students MAY NOT modify this class in any way, they must suppport EXACTLY
  * the constructor signatures specified in the base class (and NO OTHER
@@ -24,52 +42,54 @@ public abstract class DatumBase implements Comparable<DatumBase> {
   /** Constructor: wrap a Java integer.
    */
   public DatumBase(final Integer ival) {
-    // fill me in with your implementation!
+    // subclass provides implementatuion
   }
    
   /** Constructor: wrap a Java String.
    */
   public DatumBase(final String sval) {
-    // fill me in with your implementation!
+    // subclass provides implementatuion    
   }
 
   /** Constructor: wrap a Java boolean.
    */
   public DatumBase(final Boolean bval) {
-    // fill me in with your implementation!
+    // subclass provides implementatuion    
   }
 
   /** Constructor: wrap a Java double.
    */
   public DatumBase(final Double dval) {
-    // fill me in with your implementation!
+    // subclass provides implementatuion    
   }
   
-  /** Returns the value encapsulated by the DatumBase
+  /** Returns the value encapsulated by the DatumBase with semantics specified
+   * by "design note" above.
    *
-   * @throws IllegalStateException if the encapsulated value is the wrong type.
-   * If the encapsulated type is of type DOUBLE, returns the equivalent of
-   * Double.intValue().
+   * @throws ClassCastException if the encapsulated value is the wrong type.
    */
   public abstract int asInt();
 
-  /** Returns the value encapsulated by the DatumBase
+  /** Returns the value encapsulated by the DatumBase with semantics specified
+   * by "design note" above.
    *
-   * @throws IllegalStateException if the encapsulated value is the wrong type.
+   * @throws ClassCastException if the encapsulated value is the wrong type.
    */
   public abstract boolean asBoolean();
 
-  /** Returns the value encapsulated by the DatumBase
+
+  /** Returns the value encapsulated by the DatumBase with semantics specified
+   * by "design note" above.
    *
-   * @throws IllegalStateException if the encapsulated value is the wrong type.
-   * If the encapsulated type is of type INTEGER, returns the equivalent of
-   * Integer.doubleValue().
+   * @throws ClassCastException if the encapsulated value is the wrong type.
    */
   public abstract double asDouble();
 
-  /** Returns the value encapsulated by the DatumBase
+
+  /** Returns the value encapsulated by the DatumBase with semantics specified
+   * by "design note" above.
    *
-   * @throws IllegalStateException if the encapsulated value is the wrong type.
+   * @throws ClassCastException if the encapsulated value is the wrong type.
    */
   public abstract String asString();
 

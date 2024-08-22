@@ -28,6 +28,7 @@ public abstract class BufferBase {
     // fill me in in your implementation class!
   }
    
+
   /** Returns the Page encapsulated by this Buffer instance.
    *
    * @return the encapsulated Page.
@@ -40,13 +41,16 @@ public abstract class BufferBase {
    */
   public abstract BlockIdBase block();
 
-  /** Sets the buffer's "modified" bit.  Buffers that have not been modified by
-   * the client should not be flushed to disk.
+  /** Sets the buffer's "modified" bit.  This method enables performance
+   * enhancements since buffers that have not been modified by the client need
+   * not be flushed to disk (since the disk block represents the current
+   * state).
    *
-   * @param txnum
+   * @param txnum identifies the transaction that modified the Buffer.
    * @param lsn The LSN of the most recent log record, set to a negative number
    * to indicate that the client didn't generate a log record when modifying
    * the Buffer.
+   * @throws IllegalArgumentException if txnum is negative
    */
   public abstract void setModified(int txnum, int lsn);
 

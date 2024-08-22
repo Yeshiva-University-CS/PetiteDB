@@ -8,12 +8,15 @@ package edu.yu.dbimpl.file;
  * signatures).
  *
  * A Page represents the main-memory region used to hold the contents of a
- * block, and thus is used by the FileMgr in tandem with a BlockId.  A Page can
- * hold any of the following value types: ints, doubles, booleans, strings, and
- * "blobs" (i.e., arbitrary arrays of bytes).  At the Page API abstraction, a
- * client can store a value at any offset of the page but is responsible for
- * knowing what values have been stored where.  The result of trying to
- * retrieve a value from the wrong offset is undefined.
+ * block, and thus is used by the FileMgr in tandem with a BlockId.
+ * Conceptually, the "main-memory" region is a sequence of bytes, into which
+ * clients can insert values, and from which it can read values.
+ *
+ * A Page can hold any of the following value TYPES: ints, doubles, booleans,
+ * strings, and "blobs" (i.e., arbitrary arrays of bytes).  At the Page API
+ * abstraction, a client can store a value at any offset of the page but
+ * remains responsible for knowing what values have been stored where.  The
+ * result of trying to retrieve a value from the wrong offset is undefined.
  *
  * I prefer to not constrain implementation!  That said: your implementation
  * must follow the design for storing values of a given type (fixed-length
@@ -68,10 +71,8 @@ public abstract class PageBase {
     return s.length() * ((int) bytesPerChar);
   }
 
-  /** Pages wrap an "array of bytes": use this constructor when the bytes are
-   * supplied implicitly by e.g., an OS's buffer.  Because OS buffers are a
-   * valuable resource, this constructor is intended to be invoked by a higher
-   * level PetiteDB layer, specifically the buffer module.
+  /** Use this constructor when a Page's bytes are supplied implicitly by the
+   * Page implementation.
    *
    * @param blocksize specifies the size of the blocks stored by a single Page:
    * must match the value supplied to the FileMgr constructor.
@@ -83,27 +84,20 @@ public abstract class PageBase {
     // fill me in in your implementation class!
   }
    
-  /** Pages wrap an "array of bytes": use this constructor when explicitly
-   * supplied by an Java byte array, e.g., when serializing and deserializing
-   * log records (managed by the log module).
+  /** Use this constructor when a Page's bytes are explicitly supplied by the
+   * client.  The client is responsible for ensuring that the byte[] has
+   * sufficient space to store the data that are to be written into/read from
+   * the Page instance.
    *
-   * When serializing a log record, the byte[] constructor takes a byte array
-   * that contains exactly the amount of SPACE needed to hold all of the "raw"
-   * record's ints and Strings (where the latter are properly encoded, per
-   * PageBase.maxLength).  The client should then use the Page APIs to set
-   * field values at the desired offsets.  The implementation is also
-   * responsible for returning the values originally stored by the client at a
-   * given offset when the client retrieves those bytes at the given offset.
+   * Space calculation should be done in terms of the raw space required by the
+   * PetiteDB data-types, keeping in mind that Strings must be properly
+   * encoded, per PageBase.maxLength, and per the rules for encoding
+   * variable-length data types.  
    * That is: the client should not need to do any offset translation when
    * retrieving fields from the Page getter methods.
    *
-   * When deserializing a log record, the client uses this constructor to
-   * convert the serialized bytes into a Page instance that wraps the original
-   * log record.  The log record's data can then be accessed via the Page
-   * getter APIs.
-   *
-   * @param b a byte array containing ints and properly encoded Strings in a
-   * scheme known to the client.
+   * @param b a byte array containing the memory that will be read from/written
+   * by the Page instance.
    *
    * Note: it's the client's responsibility to ensure that the byte array,
    * after being serialized to disk, can be deserialized to fit into the

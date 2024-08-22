@@ -19,7 +19,17 @@ import edu.yu.dbimpl.tx.TxBase;
  * "in-use" flags are insertAfter() and delete().  Setting (or getting)
  * slot-values without first setting the "in-use" flag will not accomplish what
  * you're trying to accomplish.
+ *
+ * Related design note: any get() or set() method that's invoked on a valid
+ * slot number when the slot isn't "in use" MUST throw an IllegalStateException
+ * (NOT IAE).  The same holds true for the delete() API.
  * 
+ * Design note: because a RecordPage has access to a Layout and Schema, ALL
+ * getters and setters MUST throw an IAE if the specified field name's type
+ * doesn't correspond to the method signature.  For example: when the client
+ * supplies a field name to getInt(fldname) whose type is a boolean, the
+ * implementation MUST throw an IAE.
+ *
  * Design note: can help to consider the RecordPageBase API as moving parts of
  * the TxBase API "up a level" such that clients can get/set values in terms of
  * field names rather than block locations.  Similarly, at the RecordPageBase
