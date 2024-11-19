@@ -115,6 +115,12 @@ public abstract class TxBase {
    * the method may then block until the system is deemed quiescent by the
    * DBMS.
    *
+   * IMPORTANT: for this iteration, it's the client's responsibility to ensure
+   * that (aside from system startup), recover() is invoked only when the
+   * system is quiescent (meaning, after the test client can reasonably expect
+   * that the DBMS isn't processing some other request or otherwise engaging in
+   * other processing).
+   *
    * @throws IllegalStateException if tx isn't in the ACTIVE state.
    */
   public abstract void recover();
