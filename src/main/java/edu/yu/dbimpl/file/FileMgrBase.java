@@ -21,11 +21,13 @@ package edu.yu.dbimpl.file;
  * The FileMgr class handles the actual interaction with the OS's file
  * system. Its constructor takes two arguments: a File specifying the root
  * directory of the database and an integer denoting the size of every database
- * block. 
+ * block.  The root directory must be created relative to the directory from
+ * which the JVM was invoked.  See e.g., https://stackoverflow.com/a/15954821
+ * for the difference between user's directory and the current working
+ * directory.
  *
- * Note: the "current directory" is the directory from where the JVM was
- * invoked.  See e.g., https://stackoverflow.com/a/15954821 for the difference
- * between user's directory and the current working directory
+ * Clients are forbidden for accessing the file system rooted in the directory
+ * supplied to the FileMgr constructor EXCEPT as mediated by a PetiteDB API.
  *
  * Design note: the FileMgr creates files "on demand".  Specifically, if the
  * client invokes an API that references a file, and the file doesn't yet
@@ -36,7 +38,8 @@ package edu.yu.dbimpl.file;
  * you should catch and rethrow any such exception as a RuntimeException.
  *
  * The DBMS has exactly one FileMgr object (singleton pattern), which is
- * created during system startup.
+ * (conceptually) created during system startup, and in practice by a single
+ * invocation of the constructor.
  *
  * Relevant lectures: intro-project and file_module
  *
@@ -47,18 +50,20 @@ import java.io.*;
 
 public abstract class FileMgrBase {
 
-  /** The constructor is responsible for removing temporary files and
-   * directories contained in dbDirectory that may have been created in
-   * previous invocations of the DBMS.  By convention, such files and
-   * directories are denoted by starting with the string "temp".  The
-   * dbDirectory is never deleted even if prefixed with "temp".
+  /** The file manager MUST access the DBConfiguration singleton to determine
+   * if it is required to manage a brand-new database or to use an existing
+   * database.  If the former, the file manager is responsible for
+   * (re)initializing the file system to a brand-new state (this is
+   * implementation specific).  If the latter, the file manager is responsible
+   * to not modify previously persisted state.
    *
    * @param dbDirectory specifies the location of the root database directory
    * in which files will be created.  The root directory is the containing
    * directory for all database files. If no such directory exists when the
-   * constructor is invoked, the implementation will create it.  The method
-   * isNew() returns true in this case and false otherwise.
+   * constructor is invoked, the implementation must create it.
    * @param blockSize size of blocks to be used in this database.
+   * @throws IllegalStateException if DBConfiguration cannot supply startup
+   * information.
    */
   public FileMgrBase(File dbDirectory, int blocksize) {
     // fill me in in your implementation class!
@@ -93,14 +98,6 @@ public abstract class FileMgrBase {
    * @return the number of blocks of that file
    */
   public abstract int length(String filename);
-
-  /** Was this FileMgr instance created with dbDirectory that didn't exist
-   * prior to the constructor invocation?
-   *
-   * @return true iff the dbDirectory constructor parameter didn't exist prior
-   * to creating this instance, false otherwise.
-   */
-  public abstract boolean isNew();
 
   /** Returns the value of the blockSize supplied to the constructor (and
    * conceptually a constant value used by all layers of the PetiteDB system).

@@ -80,5 +80,12 @@ public abstract class RecoveryMgrBase {
    */
   public abstract int setString(BufferBase buff, int offset, String newval);
 
-  
+  /** Write a setBytes record to the log and return its lsn.
+   *
+   * @param buff the buffer containing the page
+   * @param offset the offset of the value in the page
+   * @param newval the value to be written
+   * @return the LSN after the record has been written to the log
+   */
+  public abstract int setBytes(BufferBase buff, int offset, byte[] newval);
 }

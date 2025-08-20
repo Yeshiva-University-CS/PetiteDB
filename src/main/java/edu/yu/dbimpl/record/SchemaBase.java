@@ -12,6 +12,10 @@ package edu.yu.dbimpl.record;
  * of each varchar field.  Schemas have no knowledge of offsets within the
  * record.
  *
+ * Design note: because I haven't architected a "delete field" API, it's ok for
+ * clients to invoke "addField" (and its cousins) multiple times with the
+ * semantics being an override of the previous state.
+ *
  * NOTE: strings MUST BE typed as java.sql.Types.VARCHAR, booleans MUST be
  * typed as java.sql.Types.BOOLEAN, doubles as java.sql.Types.DOUBLE, and
  * integers as java.sql.Types.INTEGER.

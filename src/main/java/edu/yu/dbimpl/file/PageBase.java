@@ -25,6 +25,13 @@ package edu.yu.dbimpl.file;
  * MUST use exactly Integer.BYTES to store an int, Double.BYTES to store a
  * double, and 1 byte to store a boolean.
  *
+ * Design note: a value MAY NOT be persisted across blocks!  Implication: the
+ * length of a value's persisted bytes (obviously) cannot exceed block size nor
+ * can the "offset + length of a value's persisted bytes" exceed block size.
+ * Any attempt to "set" or "get" a value whose semantics imply "setting" or
+ * "getting" a value that exceeds a single block size MUST RESULT in an
+ * IllegalArgumentException.
+ *
  * @author Avraham Leff
  */
 
@@ -97,7 +104,11 @@ public abstract class PageBase {
    * retrieving fields from the Page getter methods.
    *
    * @param b a byte array containing the memory that will be read from/written
-   * by the Page instance.
+   * by the Page instance.  Having invoked this constructor, the client is
+   * required to only set the byte array's state via calls to the PageBase API
+   * (e.g., setString()), and similarly to only get state via calls to the
+   * PageBase's API (e.g., getString()).  Changes made by the Page instance
+   * will be reflected in the byte array parameter passed by the client.
    *
    * Note: it's the client's responsibility to ensure that the byte array,
    * after being serialized to disk, can be deserialized to fit into the
@@ -111,6 +122,7 @@ public abstract class PageBase {
    *
    * @param offset the offset into the Page's main-memory from which the
    * initial byte is read, cannot be a negative value
+   * @throws IllegalArgumentException per design note above.
    */
 
   /** For all of the setter methods
@@ -118,6 +130,7 @@ public abstract class PageBase {
    * @param offset the offset into the Page's main-memory at which the initial
    * byte is written, cannot be a negative value
    * @param 2nd parameter, the value to be written
+   * @throws IllegalArgumentException per design note above.
    */
 
   

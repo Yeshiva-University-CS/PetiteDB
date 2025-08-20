@@ -4,9 +4,10 @@ package edu.yu.dbimpl.query;
  * can be exactly one of a set of possible Java types.  Although the
  * getters/setters are necessarily specified in terms of Java types, the API
  * requires that a datum be associated with an SQL type.  Specifically: strings
- * MUST BE typed as java.sql.Types.VARCHAR, booleans MUST be typed as
- * java.sql.Types.BOOLEAN, doubles as java.sql.Types.DOUBLE, and integers as
- * java.sql.Types.INTEGER.  This approach follows that specified by SchemaBase.
+ * MUST BE typed as java.sql.Types.VARCHAR, binary arrays MUST be typed as
+ * java.sql.Types.VARBINARY, booleans MUST be typed as java.sql.Types.BOOLEAN,
+ * doubles as java.sql.Types.DOUBLE, and integers as java.sql.Types.INTEGER.
+ * This approach follows that specified by SchemaBase.
  *
  * NOTE: a DatumBase is conceptually a "value class", with all implications
  * concomitant thereto.
@@ -14,14 +15,17 @@ package edu.yu.dbimpl.query;
  * Design note: while the Datum constructors are passed Java objects, the asX()
  * methods returns primitive values corresponding to the object parameters.
  * Given constructor parameter Y, the semantics of a asX() method is specified
- * by JDK Y.xValue().  The implementation must throw a ClassCastException if
- * the object parameters do not support the implied Y.xValue() method
- * invocation.
+ * by JDK Y.xValue().  (Strings are convertible to byte arrays via
+ * String.getBytes(), using the DBMS Charset), and byte arrays are convertible
+ * to Strings via the appropriate String constructor.) The implementation must
+ * throw a ClassCastException if the object parameters do not support the
+ * implied Y.xValue() method invocation.
  * 
  * Design note: the semantics of Datum.equals are "compares this Datum to the
  * specified object. The result is true if and only if the argument is not null
  * and is a Datum object that contains the same (by ".equals" semantics)
- * wrapped value as this Datum instance."
+ * wrapped value as this Datum instance."  In other words, no "implict type
+ * conversion" is done by the DBMS.
  *
  * Design note: a case can be made that the semantics of compareTo should be
  * based on a Datum's primitive value and e.g., allow comparison between 42.0
@@ -62,7 +66,14 @@ public abstract class DatumBase implements Comparable<DatumBase> {
   public DatumBase(final Double dval) {
     // subclass provides implementatuion    
   }
+
+  /** Constructor: wrap a binary array
+   */
+  public DatumBase(final byte[] array) {
+    // subclass provides implementation
+  }
   
+
   /** Returns the value encapsulated by the DatumBase with semantics specified
    * by "design note" above.
    *
@@ -93,6 +104,14 @@ public abstract class DatumBase implements Comparable<DatumBase> {
    */
   public abstract String asString();
 
+  /** Returns the value encapsulated by the DatumBase with semantics specified
+   * by "design note" above.
+   *
+   * @throws ClassCastException if the encapsulated value is the wrong type.
+   */
+  public abstract byte[] asBinaryArray();
+
+  
   /** Return the type of the wrapped value as a value from the set of constants
    * defined by java.sql.Types
    *

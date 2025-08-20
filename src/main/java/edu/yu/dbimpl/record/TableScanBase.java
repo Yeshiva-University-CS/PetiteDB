@@ -25,6 +25,9 @@ import edu.yu.dbimpl.tx.TxBase;
  *
  * Design note: All get/set methods MUST throw an IllegalStateException (NOT
  * IAE) if the TableScan is not positioned on an "in-use" RecordPage slot.
+ *
+ * Reminder: per interface semantics and per relational database semantics,
+ * TableScan.next() on an empty table will return false.
  */
 public abstract class TableScanBase implements UpdateScan {
 

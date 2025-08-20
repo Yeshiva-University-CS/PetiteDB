@@ -20,13 +20,14 @@ package edu.yu.dbimpl.tx.concurrency;
  */
 
 import edu.yu.dbimpl.file.BlockIdBase;
+import edu.yu.dbimpl.tx.TxMgrBase;
 
 public abstract class ConcurrencyMgrBase {
 
   /** Create a concurrency manager.
    *
    */
-  public ConcurrencyMgrBase() {
+  public ConcurrencyMgrBase(TxMgrBase txMgr) {
     // fill me in in your implementation class!
   }
 
@@ -51,11 +52,4 @@ public abstract class ConcurrencyMgrBase {
    */
   public abstract void release();
 
-  /** Resets global (not just the concurrency manager's tx) lock-related state
-   * to "initial" state.  This method is motivated is needed to prevent errors
-   * from cascading from one failed test to subsequent tests: whatever locks
-   * that were held by the previous state are reset so the next state can start
-   * with a clean state.
-   */
-  public abstract void resetAllLockState();
 }

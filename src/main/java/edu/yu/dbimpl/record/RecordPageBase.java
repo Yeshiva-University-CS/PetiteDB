@@ -28,19 +28,32 @@ import edu.yu.dbimpl.tx.TxBase;
  * getters and setters MUST throw an IAE if the specified field name's type
  * doesn't correspond to the method signature.  For example: when the client
  * supplies a field name to getInt(fldname) whose type is a boolean, the
- * implementation MUST throw an IAE.
+ * implementation MUST throw an IAE.  As a special case of this semantic, the
+ * implementation throws an IAE if the specified field name is not part of the
+ * schema.
+ *
+ * Usage note: clients are are responsible for invoking transaction lifecycle
+ * methods (commit/rollback) as the record module have no way of inferring what
+ * the client wants.  However, clients delegate responsibility for pinning
+ * encapsulated blocks to the RecordPage implementation and responsibility for
+ * unpinning to the TableScan implementation.  Specifically: RecordPage
+ * getter/setter APIs imply pin semantics and closing a scan implies unpin
+ * semantics.
  *
  * Design note: can help to consider the RecordPageBase API as moving parts of
  * the TxBase API "up a level" such that clients can get/set values in terms of
- * field names rather than block locations.  Similarly, at the RecordPageBase
- * level of abstraction, clients delegate responsibility for pinning and
- * unpinning the encapsulated block to the RecordPage implementation.
+ * field names rather than block locations.
+ *
+ * Design note: implementors should view THEMSELVES as being the "RecordPage
+ * client": meaning, database clients shouldn't be using a RecordPage;
+ * TableScan implementations are the intended clients of RecordPage.
+ * RecordPage is only exposed as public for pedagogic (and testing) reasons.
  */
 
 public abstract class RecordPageBase {
 
   /** When searching for a slot in a record page, clients use this constant to
-   * specify that the search should all slots in that page.  This value
+   * specify that the search should include all slots in that page.  This value
    * specifies that the cursor is positioned before the first valid slot.
    */
   public static final int BEFORE_FIRST_SLOT = -1;
@@ -58,6 +71,8 @@ public abstract class RecordPageBase {
    * RecordPageBase implementation uses the transaction to "get its work done".
    * @param blk The block in which the record is stored
    * @param layout Holds the physical and logical record schema
+   * @throws IllegalArgumentException if block is too small to hold at least
+   * one record.
    */
   public RecordPageBase(TxBase tx, BlockIdBase blk, LayoutBase layout) {
     // fill me in in in your implementation class!

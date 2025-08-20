@@ -21,6 +21,12 @@ package edu.yu.dbimpl.metadata;
  * catalog tables.  The TABLE_META_DATA_TABLE MUST STORE table name information
  * in a TABLE_NAME field.  Implementations NEED NOT support field names and
  * tables names that are larger than MAX_LENGTH_PER_NAME.
+ *
+ * The DBMS has exactly one TableMgr object (singleton pattern), which is
+ * (conceptually) created during system startup, and in practice by a single
+ * invocation of the constructor.
+ *
+ * @author Avraham Leff
  */
 
 import edu.yu.dbimpl.tx.TxBase;
@@ -53,32 +59,59 @@ public abstract class TableMgrBase {
 
   /** Constructor: create a new table (catalog) manager.
    *
-   * @param isNew true iff this is the first time that the database is being
-   * created (for this file system root): implicitly requests that the TableMgr
-   * create and populate the two meta-data catalog tables with information
-   * about themselves.
+   * A table manager MUST access the DBConfiguration singleton to determine if
+   * it is required to manage a brand-new database or to use an existing
+   * database.  If the latter, the table manager is responsible for loading
+   * previously persisted catlog information before servicing client requests.
    * @param tx supplies the transactional scope for database operations used in
-   * the constructor implementation.
+   * the constructor implementation.  The client is responsible for managing
+   * the transaction's life-cycle, and to ensure that the tx is active when
+   * passed to the table manager.
    */
-  public TableMgrBase(boolean isNew, TxBase tx) {
+  public TableMgrBase(TxBase tx) {
     // fill me in in the implementation class!
   }
 
   /** Retrieves the layout of the specified table.  If the table is not in the
    * catalog, return null.
    * 
-   * @param tblname the name of the table whose meta-data is being requested
+   * @param tableName the name of the table whose meta-data is being requested
    * @param tx supplies the transactional scope for the method's implementation.
    * @return the meta-data for the specified table, null if no such table.
    */
-  public abstract LayoutBase getLayout(String tblname, TxBase tx);
+  public abstract LayoutBase getLayout(String tableName, TxBase tx);
 
   /** Supplies the meta-data that should be persisted to the system catalog
-   * about a newly created database table.
+   * about a new database table.
+   *
+   * NOTE: the table itself need not exist at the time that this method is
+   * invoked (or even be created subsequently in the same tx).  It's OK if the
+   * user is entering metadata about a table to be created later.
    * 
-   * @param tblname the name of the new table
+   * @param tableName the name of the new table
    * @param schema the table's schema
    * @param tx supplies the transactional scope for the method's implementation
+   * @return the layout that the DBMS has now associated with this table name.
+   * @throws IllegalArgumentException if the catalog already contains an entry
+   * for the specified table.
+   * @see #replace
    */
-  public abstract void createTable(String tblname, SchemaBase schema, TxBase tx);
+  public abstract LayoutBase createTable(String tableName, SchemaBase schema, TxBase tx);
+
+  /** Replaces existing metadata associated with the specified table.
+   * 
+   * NOTE: the table itself need not exist at the time that this method is
+   * invoked (or even be created subsequently in the same tx).  It's OK if the
+   * user is entering metadata about a table to be created later.
+   *
+   * @param tableName the name of the table.
+   * @param schema the table's new schema.  If the schema is null, the effect
+   * is to only delete the existing metadata.
+   * @param tx supplies the transactional scope for the method's implementation
+   * @return LayoutBase the metadata previously associated with the table.
+   * @throws IllegalArgumentException if metadata for the table isn't currently
+   * in the catalog.
+   */
+  public abstract LayoutBase replace(String tableName, SchemaBase schema, TxBase tx);
+
 }

@@ -8,7 +8,9 @@ package edu.yu.dbimpl.index;
  * signatures).
  * 
  * An IndexDescriptor is a main-memory enapsulation of database information
- * about an index.
+ * about an index.  An IndexMgr persists IndexDescriptor state (associating
+ * instances with an "index id"), and instantiates an Index based on persisted
+ * IndexDescriptor state.
  *
  * @author Avraham Leff
  */
@@ -21,7 +23,7 @@ public abstract class IndexDescriptorBase {
   /** Constructor creates an instance that encapsulates information about the
    * specified index.
    *
-   * @param tableName the name of the table on which the index is define
+   * @param tableName the name of the table on which the index is defined
    * @param indexedTableSchema the schema of the table on which the index is defined
    * @param indexName must uniquely identify the index relative to the
    * specified table's scope

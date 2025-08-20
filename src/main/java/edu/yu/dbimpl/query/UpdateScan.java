@@ -60,7 +60,8 @@ public interface UpdateScan extends Scan {
    */
   public void insert();
    
-  /** Deletes the current record from the scan.
+  /** Deletes the current record from the scan.  This operation does not
+   * advance the cursor.
    */
   public void delete();
    

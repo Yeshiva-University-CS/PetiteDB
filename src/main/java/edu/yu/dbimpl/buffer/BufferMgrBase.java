@@ -7,10 +7,19 @@ package edu.yu.dbimpl.buffer;
  * the constructor signatures specified in the base class (and NO OTHER
  * signatures).
  *
- *  A BufferMgr manages the pinning and unpinning of buffers to blocks.
+ * A BufferMgr manages a constrained set of main-memory buffer pages by pinning
+ * and unpinning the association of buffers to specific disk blocks.  Unless
+ * explictly directed via a client invocation of flushAll(), movement from
+ * main-memory to disk is (at best) translucent to clients.  Implementations
+ * are REQUIRED to ONLY move from main-memory to disk if necessary (as defined
+ * in lecture).
  *
- * A BufferMgr is conceptually a singleton.
-
+ * The DBMS has exactly one BufferMgr instance (singleton pattern), which is
+ * created during system startup.
+ *
+ * Design note: it is recommended, but not required, for the buffer manager to
+ * delegate all read/write function of its files to the file manager.
+ *
  * @author Avraham Leff
  */
 
@@ -25,10 +34,16 @@ public abstract class BufferMgrBase {
    */
   public enum EvictionPolicy { NAIVE, CLOCK
   };
-
   
   /** Creates a buffer manager having the specified number of buffer slots, and
    * use the EvictionPolicy.NAIVE.
+   *
+   * The buffer manager MUST access the DBConfiguration singleton to determine
+   * if implementation specific actions must be taken to (re)initialize the
+   * necessary state.  The client is responsible for creating the file and log
+   * managers before invoking the buffer manager constructor.  The buffer
+   * manager may therefore assume that these module managers have been
+   * correctly initially when this constructor is invoked.
    *
    * @param fileMgr file manager singleton
    * @param logMgr  log manager singleton
@@ -44,6 +59,9 @@ public abstract class BufferMgrBase {
 
   /** Creates a buffer manager having the specified number of buffer slots, and
    * specify the EvictionPolicy that must be used.
+   *
+   * Be sure to also see the Javadoc on the default eviction policy
+   * constructor.
    *
    * @param fileMgr file manager singleton
    * @param logMgr  log manager singleton

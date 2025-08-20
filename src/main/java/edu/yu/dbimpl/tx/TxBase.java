@@ -1,11 +1,9 @@
 package edu.yu.dbimpl.tx;
 
-/** Specifies the public API for the Transaction implementation by requiring all
- * Transaction implementations to extend this base class.
+/** Specifies the public API for the Transaction implementation by requiring
+ * all Transaction implementations to implement this interface.
  *
- * Students MAY NOT modify this class in any way, they must suppport EXACTLY
- * the constructor signatures specified in the base class (and NO OTHER
- * signatures).
+ * Students MAY NOT modify this interface in any way.
  *
  * Transactions provide clients with the classic "ACID" properties, interfacing
  * with concurrency and recovery managers as necessary.
@@ -25,15 +23,21 @@ package edu.yu.dbimpl.tx;
  * provide the hooks for Tx implementation to provide concurrency and recovery
  * function.
  *
+ * Design note: a value MAY NOT be persisted across blocks!  Implication: the
+ * length of a value's persisted bytes (obviously) cannot exceed block size nor
+ * can the "offset + length of a value's persisted bytes" exceed block size.
+ * Any attempt to "set" or "get" a value whose semantics imply "setting" or
+ * "getting" a value that exceeds a single block size MUST RESULT in an
+ * IllegalArgumentException.
+ *
+ * NOTE: Transaction instances are created by invoking TxMgrBase.newTx().
+ *
  * @author Avraham Leff
  */
 
 import edu.yu.dbimpl.file.BlockIdBase;
-import edu.yu.dbimpl.file.FileMgrBase;
-import edu.yu.dbimpl.log.LogMgrBase;
-import edu.yu.dbimpl.buffer.BufferMgrBase;
 
-public abstract class TxBase {
+public interface TxBase {
    
   /** A Tx enters the ACTIVE status as soon as it's instantiated.  It remains
    * in that state until the client invokes "commit()", at which point it
@@ -56,35 +60,25 @@ public abstract class TxBase {
                        RECOVERING, RECOVERED
   };
 
-  /** Creates (and begins) a new transaction and its associated recovery and
-   * concurrency managers.  This constructor depends on the file, log, and
-   * buffer managers.
-   *
-   * @see edu.yu.dbimpl.tx.concurrency.ConcurrencyMgrBase
-   * @see edu.yu.dbimpl.tx.recovery.RecoveryMgrBase
-   */
-  public TxBase(FileMgrBase fm, LogMgrBase lm, BufferMgrBase bm) {
-    // fill me in in your implementation class!
-  }
-   
-  /** Returns the current status of the transaction.
+  /** Returns the current status of the transaction.  May be invoked regardless
+   * of the tx's status.
    *
    * NOTE: the value returned may be only a point in time value since the
    * transaction may change status immediately after the value is returned.
    *
    * @return the current status
    */
-  public abstract Status getStatus();
+  public Status getStatus();
 
   /** Every tx is associated with a unique non-negative integer id: this method
-   * returns the tx's id.
+   * returns the tx's id.  May be invoked regardless of tx's status.
    *
    * Suggestion: if only to facilitate debugging, make these values increment
    * monotonically.
    * 
    * @return the unique tx id
    */
-  public abstract int txnum();
+  public int txnum();
 
   /** Return the status of the tx.
    *
@@ -97,7 +91,7 @@ public abstract class TxBase {
    *
    * @throws IllegalStateException if tx isn't in the ACTIVE state.
    */
-  public abstract void commit();
+  public void commit();
    
   /** Roll the current transaction back: first undoes any modified values; then
    * flushes those buffers; then write and flush a rollback record to the log;
@@ -105,7 +99,7 @@ public abstract class TxBase {
    *
    * @throws IllegalStateException if tx isn't in the ACTIVE state.
    */
-  public abstract void rollback();
+  public void rollback();
    
   /** Flushes all modified buffers, then traverse the log, rolling back all
    * uncommitted transactions.  Finally, writes a quiescent "checkpoint record"
@@ -115,26 +109,20 @@ public abstract class TxBase {
    * the method may then block until the system is deemed quiescent by the
    * DBMS.
    *
-   * IMPORTANT: for this iteration, it's the client's responsibility to ensure
-   * that (aside from system startup), recover() is invoked only when the
-   * system is quiescent (meaning, after the test client can reasonably expect
-   * that the DBMS isn't processing some other request or otherwise engaging in
-   * other processing).
-   *
    * @throws IllegalStateException if tx isn't in the ACTIVE state.
    */
-  public abstract void recover();
+  public void recover();
    
   /** Pins the specified block to a page buffer.  Going forward, the
    * transaction will manage the buffer on behalf of the client (until "unpin"
    * is invoked)
    *
    * @param blk a reference to the disk block
-   * @throws IllegalArgumentException if invalid blk
+   * @throws IllegalArgumentException if BlockId is null.  
    * @throws IllegalStateException if tx isn't in the ACTIVE state.
    * @see #unpin
    */
-  public abstract void pin(BlockIdBase blk);
+  public void pin(BlockIdBase blk);
    
   /** Unpins the specified block.
    *
@@ -143,7 +131,7 @@ public abstract class TxBase {
    * @throws IllegalArgumenException if block isn't pinned by this tx
    * @see #pin
    */
-  public abstract void unpin(BlockIdBase blk);
+  public void unpin(BlockIdBase blk);
    
   /** Returns the integer value stored at the specified offset of the specified
    * block.  The transaction acquires an "s-lock" on behalf of the client
@@ -155,7 +143,7 @@ public abstract class TxBase {
    * @throws IllegalStateException if specified block isn't currently pinned by
    * this tx
    */
-  public abstract int getInt(BlockIdBase blk, int offset);
+  public int getInt(BlockIdBase blk, int offset);
 
   /** Returns the boolean value stored at the specified offset of the specified
    * block.  The transaction acquires an "s-lock" on behalf of the client
@@ -166,7 +154,7 @@ public abstract class TxBase {
    * @return the boolean stored at that offset
    * @throws IllegalStateException if specified block isn't currently pinned by this tx
    */
-  public abstract boolean getBoolean(BlockIdBase blk, int offset);
+  public boolean getBoolean(BlockIdBase blk, int offset);
 
   /** Returns the double value stored at the specified offset of the specified
    * block.  The transaction acquires an "s-lock" on behalf of the client
@@ -177,7 +165,7 @@ public abstract class TxBase {
    * @return the boolean stored at that offset
    * @throws IllegalStateException if specified block isn't currently pinned by this tx
    */
-  public abstract double getDouble(BlockIdBase blk, int offset);
+  public double getDouble(BlockIdBase blk, int offset);
     
   /** Returns the string value stored at the specified offset of the specified
    * block.  The transaction acquires an "s-lock" on beghalf of the client
@@ -188,8 +176,19 @@ public abstract class TxBase {
    * @return the string stored at that offset
    * @throws IllegalStateException if specified block isn't currently pinned by this tx
    */
-  public abstract String getString(BlockIdBase blk, int offset);
-   
+  public String getString(BlockIdBase blk, int offset);
+
+  /** Returns the byte value stored at the specified offset of the specified
+   * block.  The transaction acquires an "s-lock" on behalf of the client
+   * before returning the value.
+   *
+   * @param blk a reference to a disk block
+   * @param offset the byte offset within the block
+   * @return the byte stored at that offset
+   * @throws IllegalStateException if specified block isn't currently pinned by this tx
+   */
+  public byte[] getBytes(BlockIdBase blk, int offset);
+  
   /** Stores an integer at the specified offset of the specified block.  The
    * transaction acquires an "x-lock" on behalf of the client before reading
    * the value, creating the appropriate "update" log record and adding the
@@ -204,7 +203,7 @@ public abstract class TxBase {
    * otherwise.
    * @throws IllegalStateException if specified block isn't currently pinned by this tx
    */
-  public abstract void
+  public void
     setInt(BlockIdBase blk, int offset, int val, boolean okToLog);
 
   /** Stores an boolean at the specified offset of the specified block.  The
@@ -219,8 +218,9 @@ public abstract class TxBase {
    * @param val the value to be stored
    * @param okToLog true iff the client wants the operation to be logged, false
    * otherwise.
-   * @throws IllegalStateException if specified block isn't currently pinned by this tx   */
-  public abstract void
+   * @throws IllegalStateException if specified block isn't currently pinned by this tx
+   */
+  public void
     setBoolean(BlockIdBase blk, int offset, boolean val, boolean okToLog);
 
   /** Stores a double at the specified offset of the specified block.  The
@@ -236,7 +236,7 @@ public abstract class TxBase {
    * @param okToLog true iff the client wants the operation to be logged, false
    * otherwise.
    * @throws IllegalStateException if specified block isn't currently pinned by this tx   */
-  public abstract void
+  public void
     setDouble(BlockIdBase blk, int offset, double val, boolean okToLog);
   
   /** Stores a string at the specified offset of the specified block. The
@@ -253,9 +253,27 @@ public abstract class TxBase {
    * otherwise.
    * @throws IllegalStateException if specified block isn't currently pinned by this tx
    */
-  public abstract void
+  public void
     setString(BlockIdBase blk, int offset, String val, boolean okToLog);
 
+  /** Stores a byte[] at the specified offset of the specified block. The
+   * transaction acquires an "x-lock" on behalf of the client before reading
+   * the value, creating the appropriate "update" log record and adding the
+   * record to the log file.  Finally, the modified value is written to the
+   * buffer.  The transaction is responsible for invoking the buffer
+   * setModified() method, passing in the appropriate parameter values.
+   *
+   * @param blk a reference to the disk block
+   * @param offset a byte offset within that block
+   * @param val the value to be stored
+   * @param okToLog true iff the client wants the operation to be logged, false
+   * otherwise.
+   * @throws IllegalStateException if specified block isn't currently pinned by this tx
+   */
+  public void
+    setBytes(BlockIdBase blk, int offset, byte[] val, boolean okToLog);
+
+  
   /** Returns the number of blocks in the specified file.
    *
    * Note: be sure to provide transactional semantics for this method.
@@ -264,7 +282,7 @@ public abstract class TxBase {
    * @return the number of blocks in the file
    * @throws IllegalStateException if tx isn't in the ACTIVE state.
    */
-  public abstract int size(String filename);
+  public int size(String filename);
    
   /** Appends a new block to the end of the specified file and returns a
    * reference to it.
@@ -275,19 +293,19 @@ public abstract class TxBase {
    * @return a reference to the newly-created disk block
    * @throws IllegalStateException if tx isn't in the ACTIVE state.   
    */
-  public abstract BlockIdBase append(String filename);
+  public BlockIdBase append(String filename);
    
   /** Returns the size of blocks, uniform across all disk blocks managed by the
    * DBMS.
    *
    * @return the uniform size  of all disk blocks
    */
-  public abstract int blockSize();
+  public int blockSize();
    
   /** Returns the number of available (i.e. unpinned) buffers.
    *
    * @return the number of available buffers
    * @throws IllegalStateException if tx isn't in the ACTIVE state.      
    */
-  public abstract int availableBuffs();
-}
+  public int availableBuffs();
+} // interface
