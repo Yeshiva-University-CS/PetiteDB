@@ -1,8 +1,7 @@
 package edu.yu.dbimpl.query;
 
-/** A class representing an SQL expression (see the lecture that defines the
- * current restrictions on what must be supported).  The class is immutable by
- * design.
+/** A class representing an SQL expression (definied in the PetiteDB BNF).  The
+ * class is immutable by design.
  *
  * Students MAY NOT modify this class in any way! 
  */
@@ -21,7 +20,7 @@ public class Expression {
   /** Constructor which takes a String that names a single field (column).
    */
   public Expression(final String fldname) {
-    this.fldname = fldname;
+    this.fldname = fldname.toLowerCase();
     this.val = null;
   }
    
@@ -36,7 +35,7 @@ public class Expression {
    * if a "field name" expression
    */
   public DatumBase evaluate(Scan scan) {
-    return (val != null) ? val : scan.getVal(fldname);
+    return (val != null) ? val : scan.getVal(fldname.toLowerCase());
   }
    
   /** Return true iff the expression references a field name, false otherwise.

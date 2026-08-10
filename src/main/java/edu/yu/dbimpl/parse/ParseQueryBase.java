@@ -1,7 +1,7 @@
 package edu.yu.dbimpl.parse;
 
-/** Defines an API for artifacts returned by a Parser's processing of a select
- * statement (see the PetiteDB grammar for details)
+/** Defines an AST API for artifacts returned by a Parser's processing of a
+ * select statement (see the PetiteDB grammar definition of Query)
 
  * Students MAY NOT modify this class in any way!.
  *
@@ -13,16 +13,20 @@ import edu.yu.dbimpl.query.Predicate;
 
 public abstract class ParseQueryBase {
 
-  /** Constructor: saves the parameters.
+  /** Constructor.
    *
-   * @param fields the fields specified in the select statement
-   * @param tables the tables specified in the select statement
+   * @param fields the fields specified in the select statement in the order
+   * that they were extracted from the parse input.
+   * @param tables the tables specified in the select statement in the order
+   * that they were extracted from the parse input.
    * @param predicate the predicate specified in the select statement
+   * @throws IllegalArgumentException if any of the input parameters are
+   * syntactically invalid.
    */
   public ParseQueryBase
-    (List<String> fields, Collection<String> tables, Predicate predicate)
+    (List<String> fields, List<String> tables, Predicate predicate)
   {
-    // specify implementation in your class
+    // no-op
   }
    
   /** Returns the fields supplied to the constructor.
@@ -33,9 +37,9 @@ public abstract class ParseQueryBase {
    
   /** Returns the tables supplied to the constructor.
    *      
-   * @return a collection of table names
+   * @return a list of table names
    */
-  public abstract Collection<String> tables();
+  public abstract List<String> tables();
    
   /** Returns the predicate supplied to the constructor.
    *

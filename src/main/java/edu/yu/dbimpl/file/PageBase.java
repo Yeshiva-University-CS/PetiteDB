@@ -5,7 +5,8 @@ package edu.yu.dbimpl.file;
  *
  * Students MAY NOT modify this class in any way, they must suppport EXACTLY
  * the constructor signatures specified in the base class (and NO OTHER
- * signatures).
+ * signatures).  Internally, implementations can do whatever they want, but
+ * client code will only invoke this base class API.
  *
  * A Page represents the main-memory region used to hold the contents of a
  * block, and thus is used by the FileMgr in tandem with a BlockId.
@@ -32,6 +33,19 @@ package edu.yu.dbimpl.file;
  * "getting" a value that exceeds a single block size MUST RESULT in an
  * IllegalArgumentException.
  *
+ * Design note regarding the two Page constructors: these constructors are NOT
+ * intended for the same scenario!  The ctor that takes a blocksize parameter
+ * is intended for use by the FileMgr which uses the resulting page to move
+ * data to/from disk/RAM.  The ctor that takes a byte array is intended for use
+ * by the LogMgr to read/write bytes from a bute array so that everything is
+ * laid out correctly in PetiteDB terms.  The design envisions that eventually
+ * this type of Page will be written/read to/from the first type of Page to
+ * get/put the bytes onto a specific block on disk.  In other words, the two
+ * constructors are a bit of a convenience hack to organize the getters/setters
+ * into one place.  The constructors are NOT intended to be used
+ * interchangeably in the same scenario.  A Page constructed one way will have
+ * its own read/write path, separate from the other way.
+ *
  * @author Avraham Leff
  */
 
@@ -47,7 +61,7 @@ public abstract class PageBase {
    */
   public static Charset CHARSET = StandardCharsets.US_ASCII;
 
-  /** A charset chooses how many bytes each character encodes to. ASCII uses
+  /** A charset determines how many bytes each character encodes to. ASCII uses
    * one byte per character, whereas Unicode-16 uses between 2 bytes and 4
    * bytes per character.  We've already specified the only encoder that
    * PetiteDB implementations have to support (above), but to allow flexibility

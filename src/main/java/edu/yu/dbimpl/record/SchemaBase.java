@@ -16,6 +16,12 @@ package edu.yu.dbimpl.record;
  * clients to invoke "addField" (and its cousins) multiple times with the
  * semantics being an override of the previous state.
  *
+ * IMPORTANT NOTE: for consistency with the PetiteDB grammar, all field names
+ * MUST BE stored internally in lower-case and returned as lower-case to the
+ * clients.  All methods that involve field names supplied by the client MUST
+ * translate the supplied field name to lower-case (e.g., "hasField") before
+ * processing.
+ * 
  * NOTE: strings MUST BE typed as java.sql.Types.VARCHAR, booleans MUST be
  * typed as java.sql.Types.BOOLEAN, doubles as java.sql.Types.DOUBLE, and
  * integers as java.sql.Types.INTEGER.
@@ -41,7 +47,8 @@ public abstract class SchemaBase {
    * will supply its own (presumabely correct) values.  No point in requiring
    * the client to be aware of the server's implementation choices.
    *
-   * @param fldname the name of the field, cannot be null or empty
+   * @param fldname the name of the field, cannot be null or empty, will be
+   * stored internally in lower-case
    * @param type the type of the field, using the constants in {@link
    * java.sql.Types}.
    * @param length the logical (in contrast to physical) length of a string

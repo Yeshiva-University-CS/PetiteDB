@@ -13,15 +13,23 @@ import edu.yu.dbimpl.tx.TxBase;
  * A TableScan is an UpdateScan implementation over records stored in a file.
  *
  * Because the TableScan encapsulates (possibly many) blocks, it is responsible
- * for formatting any new blocks that it appends to the file.
- * 
+ * for formatting any new blocks that it appends to the file.  While the
+ * invoking client is responsible for tx lifecycle management (e.g., commit or
+ * rollback), the TableScan implementation is responsible for its own pin
+ * lifecycle management, specifically to ensure that blocks are pinned/unpinned
+ * as necessary as the scan iterates or closes in order prevent buffer
+ * starvation.
+ *
  * Design note: given the PetiteDB assumptions about record layout (per lecture
  * discussion), there should be no need to persist the RID information.  Should
  * you choose to persist it, the implementation must not change the offset or
  * the block state (i.e., such meta-data must be persisted in a way that is
  * transparent to the client).
  *
- * Design note: a given instance of a TableScan need not be thread-safe.
+ * Design note: a given instance of a TableScan need not be thread-safe, as
+ * it's intended for use only by a single client.  Other clients should use a
+ * different TableScan instance.  Lower levels of the stack are responsible for
+ * ensuring concurrency correctness: e.g., TxBase.
  *
  * Design note: All get/set methods MUST throw an IllegalStateException (NOT
  * IAE) if the TableScan is not positioned on an "in-use" RecordPage slot.
@@ -36,7 +44,8 @@ public abstract class TableScanBase implements UpdateScan {
    * first block of the file.  
    *
    * @param tx Defines the transactional scope under which the scan operations
-   * will take place 
+   * will take place.  Client maintains ownership of the transaction's
+   * lifecycle methods.
    * @param tblname Specifies the prefix of the table over which the scan will
    * be performed.  The implementation can add a suffix to the prefix to
    * generate the full name of the file that will store the data.

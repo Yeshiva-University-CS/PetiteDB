@@ -12,8 +12,22 @@ package edu.yu.dbimpl.tx;
  * The DBMS has exactly one TxMgr instance (singleton pattern), which is
  * created during system startup.
  *
+ * Important design/implmentation considerations: a TxMgr is a factory for
+ * producing transactions.  Transactions are NOT associated one-to-one with a
+ * client thread: i.e., one client thread can create multiple transactions.
+ * Whether or not the transactions execute concurrently depends on whether
+ * there are concurrent execution threads; but there is no intrinsic
+ * association between a client thread and the transactions that it creates.
+ *
+ * Important: in addition to (internally) designing and implementing log
+ * records to support the recovery algorithm (e.g., to recover from
+ * TxBase.setInt invocations), PetiteDB MUST support creation and usage of
+ * checkpoint records to improve performance (see lecture and textbook for
+ * details).
+ * 
  * Design note: it is recommended, but not required, for the TxMgr to delegate
- * all read/write function of its files to the lower-level "managers" supplied in the constructor.
+ * all read/write function of its files to the lower-level "managers" supplied
+ * in the constructor.
  *
  * @author Avraham Leff
  */
@@ -48,8 +62,6 @@ public abstract class TxMgrBase {
    * @param maxWaitTimeInMillis maximum amount of time that a tx will wait to
    * acquire a lock (whether slock or xlock) before the database throws a
    * LockAbortException.  Must be greater than 0, and is specified in ms.
-   * @see edu.yu.dbimpl.tx.concurrency.ConcurrencyMgrBase#sLock
-   * @see edu.yu.dbimpl.tx.concurrency.ConcurrencyMgrBase#xLock
    */
   public TxMgrBase(FileMgrBase fm, LogMgrBase lm, BufferMgrBase bm, long maxWaitTimeInMillis) {
     // base class constructor is a no-op
@@ -73,7 +85,23 @@ public abstract class TxMgrBase {
    * subsequent tests: whatever locks and state that were held by the previous
    * tx are reset so that subsequent txs can start with a clean state.
    *
+   * @fixme: this method implicitly assumes that the DBMS is using a lock-based
+   * concurrency control implementation.  This restriction should be cleaned up
+   * in subsequent iterations.
+   *
    * @protip you really want this method to be bug-free!
    */
   public abstract void resetAllLockState();
+
+  /** Flushes all modified buffers, then traverse the log, rolling back all
+   * uncommitted transactions.  Finally, writes a quiescent "checkpoint record"
+   * to the log.  This method MUST be called by the DBMS during system startup,
+   * before processing user transactions so as to set the system to a
+   * consistent state.  The method MAY also be called by clients at any time,
+   * but the client is implicitly guaranteeing that no other client processing
+   * is currently occurring or will occur until the method returns (i.e., the
+   * DBMS will remain quiescent).
+   */
+  public abstract void recover();
+
 } // abstract base class

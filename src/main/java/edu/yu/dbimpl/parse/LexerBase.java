@@ -1,31 +1,19 @@
 package edu.yu.dbimpl.parse;
 
-/** Defines the core set of token categories that must be supported by a
- * PetiteDB lexer.
- *
- * The "lexer" lecture defines the set of PetiteDB Token types.  The TokenType
- * enum below corresponds to what's defined in lecture and adds an EOF value.
+/** Defines the API for extracting tokens from an input string, and defines the
+ * set of token categories that must be supported by a PetiteDB lexer.  The
+ * lexemes correspond to a (very) small subsert of the SQL language.  This
+ * language is formally defined via BNF (remind me to post it, and the
+ * associated railroad diagram, if I forget to do so).
  *
  * Students MAY NOT modify this class in any way!.
  *
- * Design note: the Token API distinguishes between floating point numbers and
- * all integer types by distinguishing between INT_CONSTANT and
- * DOUBLE_CONSTANT.  If the input stream contains an "integer" value (e.g.,
- * "42"), the token "value" MUST contain only "42", and the token type MUST be
- * INT_CONSTANT.  If the input stream contains a "floating point" portion that
- * "makes no difference" (e.g., "42.0"), the token "value" MUST contain only
- * "42" (dropping the ".0") to ease client conversion of that value to an
- * integer or floating point number as necessary.  The type of the token will
- * be INT_CONSTANT.  Only when the input stream contains a floating point
- * portion greater than zero MUST the token "value" preserve the floating point
- * portion of the token, and the token type MUST then be DOUBLE_CONSTANT.
- * 
  * Design note: the lexer API is deliberately very unconstrained to allow for
  * maximum implementation freedom subject to the constraint of testability.
  * Implementors should consider adding "consume specific token type" APIs on
  * behalf of the parser.
  *
- * Semantics note: the parser and lexer should fail-early-and-fatally after
+ * Design note: the parser and lexer should fail-early-and-fatally after
  * throwing a BadSyntaxException.  Do not try to recover from the error, let
  * the client fix it and try again.  The behavior of subsequent API invocations
  * on the input by this parser or lexer instance is undefined.
@@ -37,7 +25,13 @@ import java.util.*;
 
 public abstract class LexerBase {
 
-  /** Define an enum that specifies the set of valid token types
+  /** Define an enum that specifies the set of valid token types.
+   *
+   * IMPORTANT: the PetiteDB grammar requires that all keyword and id token
+   * matches be "lower-cased", so that an e.g., "SELECT X from Y" statement is
+   * processed as "select x from y".  This implies that PetiteDB store all
+   * keyword and id token input that's supplied by clients in "lower-case" as
+   * well.
    */
   public enum TokenType {
     DELIMITER, COMPARISON_OP, EOF, ID, INT_CONSTANT, DOUBLE_CONSTANT, BOOLEAN_CONSTANT,
@@ -49,9 +43,9 @@ public abstract class LexerBase {
    *
    * IMPORTANT: even if the token type doesn't correspond to a String (e.g., an
    * NUMERIC_CONSTANT), Token.value contains the String version of that number.
-
-   *  May review immutability design if profiling shows performance problems as
-   *  large number of Tokens are created during parsing.
+   * 
+   *  Note to self: review immutability design if profiling shows performance
+   *  problems as large number of Tokens are created during parsing.
    */
   public static class Token {
     /** Constructor
@@ -92,12 +86,16 @@ public abstract class LexerBase {
     public final String value;
   } // static inner class
 
+  /** Implementations MUST return THIS variable to inform clients that the
+   * input has been consumed
+   */
+  public static Token EOF_Token =
+    new Token(TokenType.EOF, String.valueOf(TokenType.EOF));
+
   /** Constructor: creates a new lexical analyzer to be used for parsing a
    * PetiteDB SQL statement.  Upon completion of the constructor invocation,
-   * the lexer must have consumed one token, and is able to return that token
+   * the lexer MUST HAVE consumed one token, and is able to return that token
    * via firstTokenRetrieved().
-   *
-   * See lecture discussion for the Lexer requirements.
    *
    * @param s the statement to be lex'd
    * @throws BadSyntaxException if a problem occurs when reading the input for
@@ -128,21 +126,21 @@ public abstract class LexerBase {
 
   /** Defines the set of valid PetiteDB comparison operators as an unmodifable list
    */
-  public final static List<Character> comparisonOperators = Collections.
-    unmodifiableList(Arrays.asList('=', '>', '<'));
+  public final static List<Character> comparisonOperators = List.of
+    ('=', '>', '<');
 
-  /** Defines the set of valid PetiteDB keywords as an unmodifiable List
+  /** Defines the set of valid PetiteDB logical operators as an unmodifiable
+   * list.  Defined in lower-case because the lexer is supposed to lower-case
+   * everything but string constants.
    */
-  public final static List<String> keywords = Collections.
-    unmodifiableList(Arrays.
-                     asList("insert", "into", "values", "delete",
-                            "int", "varchar", "view",
-                            "update", "set", "select", "from", "where", "and",
-                            "as", "index", "on", "create", "table"));
+  public final static List<String> logicalOperators = List.of("and");
 
-  /** Implementations must return this variable to inform clients that the
-   * input has been consumed
+  /** Defines the set of valid PetiteDB keywords as an unmodifiable List.
+   * Defined in lower-case because the lexer is supposed to lower-case
+   * everything but string constants.
    */
-  public static Token EOF_Token =
-    new Token(TokenType.EOF, String.valueOf(TokenType.EOF));
+  public final static List<String> keywords = List.
+    of("insert", "into", "values", "delete",
+       "int", "varchar", "update", "set", "select", "from", "where", "and",
+       "index", "on", "create", "table");
 }

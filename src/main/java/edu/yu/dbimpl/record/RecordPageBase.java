@@ -10,19 +10,21 @@ import edu.yu.dbimpl.tx.TxBase;
  * the constructor signatures specified in the base class (and NO OTHER
  * signatures).
  *
- * A RecordPage manages "record-slots" at block granularity.
- *
  * Implementations MUST use the slotted page design for fixed-length fields
  * discussed in lecture and textbook.
+ *
+ * A RecordPage manages "record-slots" at block granularity: given the layout
+ * associated with a RecordPage, there are a maximum number of slots that are
+ * available to clients.  The Javadoc refers to this maximum as "capacity".
  *
  * Design note: the only methods available for manipulating the crucial
  * "in-use" flags are insertAfter() and delete().  Setting (or getting)
  * slot-values without first setting the "in-use" flag will not accomplish what
  * you're trying to accomplish.
  *
- * Related design note: any get() or set() method that's invoked on a valid
- * slot number when the slot isn't "in use" MUST throw an IllegalStateException
- * (NOT IAE).  The same holds true for the delete() API.
+ * Related design note: any get() or set() method that's invoked on valid slot
+ * number when the slot isn't "in use" MUST throw an IllegalStateException (NOT
+ * IAE).  The same holds true for the delete() API.
  * 
  * Design note: because a RecordPage has access to a Layout and Schema, ALL
  * getters and setters MUST throw an IAE if the specified field name's type
@@ -63,7 +65,8 @@ public abstract class RecordPageBase {
    * IMPORTANT: If the encapsulated block is being used for the first time, the
    * CLIENT is responsible for invoking "format()" before invoking other
    * methods on the RecordPage.  Failure to do so implies that the semantics of
-   * subsequent method invocations are undefined.
+   * subsequent method invocations are undefined (e.g., implementation may
+   * return garbage or throw an ISE or an IAE etc.)
    *
    * @param tx Defines the transaction scope in which operations on the block
    * will take place.  The client passing the tx continues to be responsible
@@ -81,7 +84,7 @@ public abstract class RecordPageBase {
   /** Return the integer value stored for the specified field of a specified
    * slot.
    *
-   * @param slot specifies location storing the value, must be non-negative.
+   * @param slot specifies location storing the value, 0 <= slot < capacity
    * @param fldname the name of the field, must be defined on the page's layout.
    * @return the integer stored in that field
    * @throws IllegalArgumentException if pre-conditions are violated.
@@ -91,7 +94,7 @@ public abstract class RecordPageBase {
   /** Return the string value stored for the specified field of the specified
    * slot.
    *
-   * @param slot specifies location storing the value, must be non-negative.
+   * @param slot specifies location storing the value, 0 <= slot < capacity
    * @param fldname the name of the field, must be defined on the page's layout.
    * @return the string stored in that field
    * @throws IllegalArgumentException if pre-conditions are violated.   
@@ -101,7 +104,7 @@ public abstract class RecordPageBase {
   /** Return the boolean value stored for the specified field of a specified
    * slot.
    *
-   * @param slot specifies location storing the value, must be non-negative.
+   * @param slot specifies location storing the value, 0 <= slot < capacity
    * @param fldname the name of the field, must be defined on the page's layout.
    * @return the boolean stored in that field
    * @throws IllegalArgumentException if pre-conditions are violated.   
@@ -111,7 +114,7 @@ public abstract class RecordPageBase {
   /** Return the double value stored for the specified field of a specified
    * slot.
    *
-   * @param slot specifies location storing the value, must be non-negative.
+   * @param slot specifies location storing the value, 0 <= slot < capacity
    * @param fldname the name of the field, must be defined on the page's layout.
    * @return the double stored in that field
    * @throws IllegalArgumentException if pre-conditions are violated.   
@@ -120,7 +123,7 @@ public abstract class RecordPageBase {
   
   /** Stores an integer at the specified field of the specified slot.
    *
-   * @param slot specifies location storing the value, must be non-negative.
+   * @param slot specifies location storing the value, 0 <= slot < capacity
    * @param fldname must be defined on the page's layout
    * @param val the integer value stored in that field
    * @throws IllegalArgumentException if pre-conditions are violated.   
@@ -129,7 +132,7 @@ public abstract class RecordPageBase {
 
   /** Stores a string at the specified field of the specified slot.
    *
-   * @param slot specifies location storing the value, must be non-negative.
+   * @param slot specifies location storing the value, 0 <= slot < capacity
    * @param fldname must be defined on the page's layout
    * @param val the string value stored in that field
    * @throws IllegalArgumentException if pre-conditions are violated or if the
@@ -140,7 +143,7 @@ public abstract class RecordPageBase {
 
   /** Stores a boolean at the specified field of the specified slot.
    *
-   * @param slot specifies location storing the value, must be non-negative.
+   * @param slot specifies location storing the value, 0 <= slot < capacity
    * @param fldname must be defined on the page's layout
    * @param val the boolean value stored in that field
    * @throws IllegalArgumentException if pre-conditions are violated.      
@@ -149,7 +152,7 @@ public abstract class RecordPageBase {
 
   /** Stores a double at the specified field of the specified slot.
    *
-   * @param slot specifies location storing the value, must be non-negative.
+   * @param slot specifies location storing the value, 0 <= slot < capacity
    * @param fldname must be defined on the page's layout
    * @param val the double value stored in that field
    * @throws IllegalArgumentException if pre-conditions are violated.   
@@ -158,8 +161,8 @@ public abstract class RecordPageBase {
   
   /** Deletes the specified slot by setting its "in-use" flag to "not in use".
    *
-   * @param slot uniquely identifies the record slot.
-   * @throws IllegalArgumentException if slot is negative.
+   * @param slot uniquely identifies the record slot, 0 <= slot < capacity
+   * @throws IllegalArgumentException if pre-conditions are violated.
    */
   public abstract void delete(int slot);
    
@@ -169,6 +172,11 @@ public abstract class RecordPageBase {
    *
    * These operations should not be logged (from a transactional point of view)
    * because we consider the old values to be meaningless.
+   *
+   * NOTE: the client is responsible for ensuring that format() is called once
+   * per disk block; although the block will likely be wrapped by a RecordPage
+   * many times, a given disk block must only be formatted once (subsequent
+   * invocations will overwrite previously written data!)
    */ 
   public abstract void format();
 
@@ -176,10 +184,10 @@ public abstract class RecordPageBase {
    *
    * @param slot uniquely identifies the record slot from which the search will
    * begin.  To search from the beginning of the block, set this parameter to
-   * BEFORE_FIRST_SLOT.
+   * BEFORE_FIRST_SLOT. Parameter constraint: 0 <= slot < capacity
    * @return Returns the location of the first "in-use" slot AFTER the
    * specified slot: if all slots are "empty", returns -1 as a sentinel value.
-   * @throws IllegalArgumentException if slot is less than -1.
+   * @throws IllegalArgumentException if pre-conditions are violated.
    */
   public abstract int nextAfter(int slot);
  
@@ -187,11 +195,11 @@ public abstract class RecordPageBase {
    *
    * @param slot uniquely identifies the record slot from which the search will
    * begin.  To search from the beginning of the block, set this parameter to
-   * BEFORE_FIRST_SLOT.
+   * BEFORE_FIRST_SLOT.  Parameter constraint: 0 <= slot < capacity
    * @return Returns the location of the first "empty" slot AFTER the specified
    * slot AND sets the state of the slot to "in-use"; if all slots are
    * "in-use", returns -1 as a sentinel value.
-   * @throws IllegalArgumentException if slot is less than -1.   
+   * @throws IllegalArgumentException if pre-conditions are violated.
    */
   public abstract int insertAfter(int slot);
   

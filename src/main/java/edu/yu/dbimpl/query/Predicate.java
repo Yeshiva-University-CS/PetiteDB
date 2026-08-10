@@ -1,8 +1,8 @@
 package edu.yu.dbimpl.query;
 
-/** A Predicate is a boolean combination of terms (see the lecture that defines
- * the current restrictions on what must be supported).  This class is NOT
- * immutable as clients can add arbitrary number of terms to the Predicate.
+/** A Predicate is a boolean combination of terms (see the PetiteDB BNF
+ * definition).  This class is NOT immutable as clients can add arbitrary
+ * number of terms to the Predicate.
  *
  * IMPORTANT: a Predicate currently only provides a "conjunction of terms"
  * semantics.  This decision simplifies implementation considerably but is very
@@ -10,9 +10,11 @@ package edu.yu.dbimpl.query;
  *
  * FIXME: allow (at least) OR clauses in predicates.
  *
- * Design note/fixme?: terms() is a List, but does order matter for predicate
- * semantics?  Will set semantics work as well?  Adding/experimenting with set
- * semantics in order to decide: definitely in flux.
+ * Design note/fixme?: terms() is a List because order (may) matter in the
+ * context of e.g., parsing and error reporting; but duplicates are not
+ * allowed, and semantically the order of Terms in a predicate doesn't affect
+ * logical corretness so a Predicate resembles a Set.  Adding/experimenting
+ * with set semantics in order to decide: definitely in flux.
  *
  * Students MAY NOT modify this class in any way!.
  *
@@ -35,12 +37,19 @@ public class Predicate {
    * @param t the term
    */
   public Predicate(Term t) {
+    if (terms.contains(t)) {
+      throw new IllegalArgumentException
+        ("Term parameter already in predicate: "+t);
+    }
+    
     terms.add(t);
   }
 
-  /** Adds a term to those currently encapsulated by the Predicate.
+  /** Adds a term to those currently encapsulated by the Predicate.  Throws an
+   * exception if the term is already present in the predicate.
    *
    * @param t the term
+   * @throws IllegalArgumentException if term is already present.
    */
   public void add(final Term t) {
     terms.add(t);
@@ -51,6 +60,21 @@ public class Predicate {
    * @param thoseTerms the list of terms to be added.
    */
   public void add(final List<Term> thoseTerms) {
+    // Validate the entire batch against the current state
+    for (Term term : thoseTerms) {
+      if (terms.contains(term)) {
+        throw new IllegalArgumentException
+          ("Batch rejected: duplicate term detected:" + term);
+      }
+    }
+    
+    // Validate the input parameter against itself
+    long distinctCount = thoseTerms.stream().distinct().count();
+    if (distinctCount < thoseTerms.size()) {
+      throw new IllegalArgumentException
+        ("Batch rejected: incoming list contains duplicates within itself.");
+    }
+    
     terms.addAll(thoseTerms);
   }
   
@@ -66,6 +90,9 @@ public class Predicate {
   }
 
   @Override
+  // given current definition only allows for AND, we can use set-equality
+  // semantics, and not worry about term order or worry about comparing logical
+  // operators.  NOT a hack: but very tightly coupled to current BNF.
   public boolean equals(Object obj) {
     if (obj == this) {
       return true;
@@ -104,3 +131,4 @@ public class Predicate {
   // List is imutable (but note that the contents of the List is mutable
   final List<Term> terms = new ArrayList<Term>();
 } // class
+

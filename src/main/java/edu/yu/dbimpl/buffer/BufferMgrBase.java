@@ -47,9 +47,11 @@ public abstract class BufferMgrBase {
    *
    * @param fileMgr file manager singleton
    * @param logMgr  log manager singleton
-   * @param nBuffers number of buffers to allocate in main-memory
+   * @param nBuffers number of buffers to allocate in main-memory, must be
+   * greater than 0.
    * @param maxWaitTime maximum number of milliseconds to wait before throwing
    * a BufferAbortException to a client invoking pin().  Must be greater than 0.
+   * @throws IllegalArgumentException as appropriate.
    * @see #pin
    */
   public BufferMgrBase
@@ -65,10 +67,11 @@ public abstract class BufferMgrBase {
    *
    * @param fileMgr file manager singleton
    * @param logMgr  log manager singleton
-   * @param nBuffers number of buffers to allocate in main-memory
+   * @param nBuffers number of buffers to allocate in main-memory, must be greater than 0.
    * @param maxWaitTime maximum number of milliseconds to wait before throwing
    * a BufferAbortException to a client invoking pin().  Must be greater than 0.
-   * @param policy the eviction policy to be used
+   * @param policy the eviction policy to be used, can't be null.
+   * @throws IllegalArgumentException as appropriate.
    * @see #pin
    * @see #EvictionPolicy
    */

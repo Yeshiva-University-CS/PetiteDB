@@ -1,8 +1,7 @@
 package edu.yu.dbimpl.query;
 
-/** A Term is a comparison between two Expressions (see the lecture that
- * defines the current restrictions on what must be supported).  The class is
- * immutable by design.
+/** A Term is a comparison between two Expressions (see the PetiteDB BNF
+ * definition).  The class is immutable by design.
  *
  * Students MAY NOT modify this class in any way!
  */

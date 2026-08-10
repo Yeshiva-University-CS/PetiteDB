@@ -7,14 +7,23 @@ package edu.yu.dbimpl.buffer;
  * the constructor signatures specified in the base class (and NO OTHER
  * signatures).
  *
- * An single buffer in BufferMgr's buffer pool: it encapsulates a Page, adding
- * additional information such as whether the Page's contents have been
- * modified since it was fetched from disk.
+ * An single buffer in BufferMgr's buffer pool: it encapsulates a
+ * Page, adding additional information such as whether the Page's
+ * contents have been modified since it was fetched from disk.  A
+ * buffer is also "transaction aware" through the setModified() hook:
+ * presumably, this state is used by the TxMgr layer of the stack, but
+ * this is definitely implementation-dependent and can be ignored if
+ * the implementation chooses to do so.
  *
  * Design note: Buffers should be manipulated through the BufferMgr API to the
  * greatest extent possible.  For example, difficult to see how a client can
  * usefully create a Buffer through its constructor since it will not be
  * associated with a disk block.
+ *
+ * Design note: expanding on the previous note, implementation (and test code)
+ * need not worry about Buffer thread-safety, since two threads should not be
+ * accessing a Buffer simultaneously (since Buffer access is controlled by the
+ * BufferMgr).  The BufferMgr, in contrast, must be thread-safe.
  *
  * @author Avraham Leff
  */
@@ -28,7 +37,6 @@ public abstract class BufferBase {
     // fill me in in your implementation class!
   }
    
-
   /** Returns the Page encapsulated by this Buffer instance.
    *
    * @return the encapsulated Page.
@@ -47,13 +55,23 @@ public abstract class BufferBase {
    * state).
    *
    * @param txnum identifies the transaction that modified the Buffer.
-   * @param lsn The LSN of the most recent log record, set to a negative number
-   * to indicate that the client didn't generate a log record when modifying
-   * the Buffer.
-   * @throws IllegalArgumentException if txnum is negative
+   * @param lsn The LSN of the log record that modified the buffer.
+   * @throws IllegalArgumentException if either txnum or lsn is
+   * negative or if the lsn exceeds the LogMgr's most recent lsn (so
+   * that the parameter value doesn't correspond to ANY log record).
+   * @see #setModified(int)
    */
   public abstract void setModified(int txnum, int lsn);
 
+  /** Sets the buffer's "modified" bit AND inform implementation that the
+   * modifying operation didn't generate a log record.
+   *
+   * @param txnum identifies the transaction that modified the Buffer.
+   * @throws IllegalArgumentException if txnum is negative.
+   * @see #setModified(int, int)
+   */
+  public abstract void setModified(int txnum);
+  
   /** Return true iff the buffer is currently pinned, defined as "has a pin
    * count that is greater than 0".
    *

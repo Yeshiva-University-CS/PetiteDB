@@ -6,6 +6,13 @@ import edu.yu.dbimpl.record.RID;
  * records" operations.
  *
  * Students MAY NOT change this interface IN ANY WAY!
+ *
+ * VERY IMPORTANT: for consistency with the specified PetiteDB grammar, all
+ * field names are stored internally in String.toLowerCase() form.
+ * Implementations should keep this in mind as they process client parameters
+ * whose value may not be in lower-case.
+ *
+ * @author Avraham Leff
  */
 public interface UpdateScan extends Scan {
 

@@ -23,6 +23,41 @@ package edu.yu.dbimpl.tx;
  * provide the hooks for Tx implementation to provide concurrency and recovery
  * function.
  *
+ * Concurrency and lock management: transactions MUST strictly enforce
+ * Two-Phase Locking (2PL).  Furthermore, implementations must support lock
+ * upgrades.  If a transaction currently holds an s-lock on a block and invokes
+ * a setX method requiring an x-lock on that same block, the concurrency
+ * manager must seamlessly upgrade the lock from shared to exclusive (provided
+ * no other transaction currently holds an s-lock on that block).
+ *
+ * As discussed in lecture, multiple locking protocols are available that
+ * provide ACID semantics (specifically isolation), each providing
+ * "serializability".  Your implementation must provide rigorous 2PL (holding
+ * all S-locks and X-locks until termination).  This is also known "strong
+ * strict two-phase locking", see e.g., discussion here
+ * https://grokipedia.com/page/Two-phase_locking#strong-strict-two-phase-locking.
+ * This important design decision is favoring implementation simplicity and
+ * correctness over a greater degree of concurrent performance.  For example,
+ * under rigorous 2PL, you don't have to worry about cascading rollbacks.
+ *
+ * Design note: an external client is allowed to make as many pin requests as
+ * she chooses, but is responsible for ultimately making the same number of
+ * unpin requests so that the block is available to other transactions.  The
+ * same is true for internal (i.e., PetiteDB implementation code further up the
+ * stack) clients.
+ *
+ * Design note: when clients invoke a setX method, a log-based transaction
+ * management scheme may need to know the current state at the specified offset
+ * for the specified block.  At this level of the stack, the responsibility for
+ * "schema management" is on the CLIENT, NOT the transaction implementation.
+ * In other words, the client who sepecifies setX, is implicitly guaranteeing
+ * that the current value at that location is an "X". Thus, if the client
+ * invokes TxBase.setString() and specifies that the method invocation must be
+ * logged, the implementation should assume that a String is currently stored
+ * at that offset in that block.  As discussed in lecture, the first time that
+ * a client invokes TxBase.setX() she should specify that the method should not
+ * be logged because there is no "old value" that can be logged.
+ *
  * Design note: a value MAY NOT be persisted across blocks!  Implication: the
  * length of a value's persisted bytes (obviously) cannot exceed block size nor
  * can the "offset + length of a value's persisted bytes" exceed block size.
@@ -100,18 +135,6 @@ public interface TxBase {
    * @throws IllegalStateException if tx isn't in the ACTIVE state.
    */
   public void rollback();
-   
-  /** Flushes all modified buffers, then traverse the log, rolling back all
-   * uncommitted transactions.  Finally, writes a quiescent "checkpoint record"
-   * to the log.  This method MUST be called by the DBMS during system startup,
-   * before processing user transactions so as to set the system to a
-   * consistent state.  The method MAY be called by a client at any time, but
-   * the method may then block until the system is deemed quiescent by the
-   * DBMS.
-   *
-   * @throws IllegalStateException if tx isn't in the ACTIVE state.
-   */
-  public void recover();
    
   /** Pins the specified block to a page buffer.  Going forward, the
    * transaction will manage the buffer on behalf of the client (until "unpin"
